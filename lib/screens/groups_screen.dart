@@ -42,38 +42,52 @@ class GroupsScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color.fromARGB(220, 255, 255, 255),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Total Spent',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
+                child: InkWell(
+                  onTap:(){
+                    print('tapped personal spending');
+                  }, 
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Total Spent',
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
                           ),
-                        ),
-                        const Text(
-                          'RM 1,234.00',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF00D4AA),
+                          const Text(
+                            'RM 1,234.00',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF00D4AA),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    const Divider(),
-                    const SizedBox(height: 12),
-                    _buildPersonalItem('Groceries', 'RM 450.00', Icons.shopping_cart),
-                    _buildPersonalItem('Transport', 'RM 234.00', Icons.directions_car),
-                    _buildPersonalItem('Entertainment', 'RM 550.00', Icons.movie),
-                  ],
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Divider(),
+                      const SizedBox(height: 12),
+                      _buildPersonalItem(
+                        'Groceries',
+                        'RM 450.00',
+                        Icons.shopping_cart,
+                      ),
+                      _buildPersonalItem(
+                        'Transport',
+                        'RM 234.00',
+                        Icons.directions_car,
+                      ),
+                      _buildPersonalItem(
+                        'Entertainment',
+                        'RM 550.00',
+                        Icons.movie,
+                      ),
+                    ],
+                  )
                 ),
               ),
               const SizedBox(height: 32),
@@ -91,8 +105,10 @@ class GroupsScreen extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      ElevatedButton.icon(
-                        onPressed: () {},
+                      ElevatedButton.icon(//create group button
+                        onPressed: () {
+
+                        },
                         icon: const Icon(Icons.add, size: 18),
                         label: const Text('Create', style: TextStyle(fontSize: 12)),
                         style: ElevatedButton.styleFrom(
@@ -104,8 +120,10 @@ class GroupsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        onPressed: () {},
+                      ElevatedButton.icon(//join group button
+                        onPressed: () {
+                          
+                        },
                         icon: const Icon(Icons.group_add, size: 18),
                         label: const Text('Join', style: TextStyle(fontSize: 12)),
                         style: ElevatedButton.styleFrom(
@@ -196,10 +214,14 @@ class GroupsScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color.fromARGB(220, 255, 255, 255),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Column(
+      child: InkWell(
+        onTap:(){
+          print('tapped $title');
+        },
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -291,7 +313,8 @@ class GroupsScreen extends StatelessWidget {
             ],
           ),
         ],
-      ),
+      )
+      )
     );
   }
 }
