@@ -38,6 +38,50 @@ class _SignUpScreenState extends State<SignUpScreen> {
     //authenticate methods
   final String baseUrl = "http://localhost:5232/api/auth";
 
+  Future<void> _login() async{
+    final url = Uri.parse("$baseUrl/login");
+    final body = jsonEncode({
+      "identifier": _emailController.text.trim(),
+      "password": _passwordController.text.trim(),
+    });
+
+    try {
+      final res = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+
+      if (res.statusCode == 200) {
+          final data = jsonDecode(res.body);
+          final token = data["token"];
+          if (token != null) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString("jwt", token);
+            await prefs.setString('user', jsonEncode(data['user']));
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Login successful!")),
+              );
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+              );
+            }
+          }
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Network error: $e")));
+    }
+  }
+
   Future<void> _authenticate() async {
     setState(() => _isLoading = true);
 
@@ -63,10 +107,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text("Account Created Successfully!")));
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
-            );
+            _login();
           }
         } else {
         ScaffoldMessenger.of(

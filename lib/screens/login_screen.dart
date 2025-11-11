@@ -20,9 +20,26 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
 
+//delete this after backend is live
+Future<void> _loadFakeUser() async{
+  final data = jsonDecode("""{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+  "user": {
+    "id": 12,
+    "username": "johndoe",
+    "email": "johndoe@example.com",
+    "fullName": "John Doe",
+    "mobile": "+60123456789",
+    "dob":"1/2/2003"
+  }
+}""");
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString("jwt", data['token']);
+  await prefs.setString('user', jsonEncode(data['user']));
+}
 
   //authenticate methods
-  final String baseUrl = "http://localhost:5232/api/auth"; 
+  final String baseUrl = "http://localhost:5232/api/auth";
 
   Future<void> _authenticate() async {
     setState(() => _isLoading = true);
@@ -46,6 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (token != null) {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString("jwt", token);
+            await prefs.setString('user', jsonEncode(data['user']));
 
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -198,6 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         kDebugMode
                             ? ElevatedButton(
                               onPressed: () {
+                                _loadFakeUser();
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(

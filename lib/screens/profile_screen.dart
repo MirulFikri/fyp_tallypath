@@ -1,11 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'welcome_screen.dart';
+import 'dart:convert';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  Map<String, dynamic>? _userData;
+
+  static Future<void> _logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('jwt');
+    await prefs.clear();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+      (route) => false, // removes all previous routes (can't go back)
+    );
+  }
+
+  @override
+  void initState() {
+    _loadUser();
+    super.initState();
+  }
+
+
+  void _loadUser() async{
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userData = jsonDecode(prefs.getString('user') ?? "");
+    });
+  }
+  @override
+  Widget build(BuildContext context){
     return Scaffold(
       backgroundColor: const Color(0xFFE8F9F5),
       appBar: AppBar(
@@ -43,8 +76,8 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'John Doe',
+                    Text(
+                      _userData?["fullName"] ?? "",
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -52,7 +85,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'john.doe@example.com',
+                      _userData?["email"] ?? "",
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -60,7 +93,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '+60 12-345 6789',
+                      _userData?["mobile"] ?? "",
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -230,14 +263,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const WelcomeScreen(),
-                  ),
-                  (route) => false,
-                );
+                _logout(context);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
