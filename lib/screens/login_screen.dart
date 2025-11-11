@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'signup_screen.dart';
 import 'home_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,6 +18,69 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
+
+
+  //authenticate methods
+  final String baseUrl = "http://localhost:5232/api/auth"; 
+
+  Future<void> _authenticate() async {
+    setState(() => _isLoading = true);
+
+    final url = Uri.parse("$baseUrl/login");
+    final body = jsonEncode({
+      "username": _emailController.text.trim(),//change this later to email or username
+      "password": _passwordController.text.trim(),
+    });
+
+    try {
+      final res = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+
+      if (res.statusCode == 200) {
+          final data = jsonDecode(res.body);
+          final token = data["token"];
+          if (token != null) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString("jwt", token);
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Login successful!")),
+              );
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+              );
+            }
+          }
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Network error: $e")));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _checkToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("jwt");
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(token != null ? "Token found!" : "No token stored"),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -24,10 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _login() {
     if (_formKey.currentState!.validate()) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      _authenticate();
     }
   }
 
@@ -133,12 +197,31 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 40),
                         
                         // Login Button
+                        
                         ElevatedButton(
                           onPressed: _login,
-                          child: const Text('Log In'),
+                          child: _isLoading ? const CircularProgressIndicator() : const Text('Log In'),
                         ),
                         const SizedBox(height: 16),
                         
+                        //bypass login when backend not connected
+                        kDebugMode
+                            ? ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const HomeScreen(),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color.fromARGB(255, 239, 232, 232),
+                                foregroundColor: Colors.black,
+                              ),
+                              child: const Text('Bypass Login (visible only on debug)'),
+                            )
+                            : SizedBox(height: 20),
                         // Forgot Password
                         Center(
                           child: TextButton(
@@ -158,8 +241,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 80),
-                        
+                        const SizedBox(height: 60),
+
                         // Create Account Button
                         ElevatedButton(
                           onPressed: () {
