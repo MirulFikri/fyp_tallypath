@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import 'home_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -17,6 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController = TextEditingController();
   final _dobController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -29,16 +34,58 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
-  void _signUp() {
-    print('${_emailController.text}\n${_nameController.text}\n${_mobileController.text}\n${_usernameController.text}\n${_dobController.text}');
-    if (_formKey.currentState!.validate()) {
-      // Handle sign up logic here
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Account created successfully!'),
-        ),
+
+    //authenticate methods
+  final String baseUrl = "http://localhost:5232/api/auth";
+
+  Future<void> _authenticate() async {
+    setState(() => _isLoading = true);
+
+    final url = Uri.parse("$baseUrl/register");
+    final body = jsonEncode({
+      "username": _usernameController.text.trim(),
+      "password": _passwordController.text.trim(),
+      "fullname": _nameController.text.trim(),
+      "email": _emailController.text.trim(),
+      "mobile": _mobileController.text.trim(),
+      "dob": _dobController.text.trim(),
+    });
+
+    try {
+      final res = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
       );
-      Navigator.pop(context);
+
+      if (res.statusCode == 200) {
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text("Account Created Successfully!")));
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+          }
+        } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Network error: $e")));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _signUp() {
+    //print('${_emailController.text}\n${_nameController.text}\n${_mobileController.text}\n${_usernameController.text}\n${_dobController.text}');
+    if (_formKey.currentState!.validate()) {
+      _authenticate();
     }
   }
 
