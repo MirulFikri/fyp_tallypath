@@ -15,7 +15,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final url = Uri.parse("$baseUrl/login");
     final body = jsonEncode({
-      "username": _emailController.text.trim(),//change this later to email or username
+      "identifier": _identifierController.text.trim(),
       "password": _passwordController.text.trim(),
     });
 
@@ -71,20 +71,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _checkToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("jwt");
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(token != null ? "Token found!" : "No token stored"),
-      ),
-    );
-  }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -142,10 +132,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
-                          controller: _emailController,
+                          controller: _identifierController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: const InputDecoration(
-                            hintText: 'example@example.com',
+                            hintText: 'example@example.com / username',
                             border: InputBorder.none,
                           ),
                           validator: (value) {
@@ -222,6 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: const Text('Bypass Login (visible only on debug)'),
                             )
                             : SizedBox(height: 20),
+                            
                         // Forgot Password
                         Center(
                           child: TextButton(
