@@ -39,7 +39,7 @@ Future<void> _loadFakeUser() async{
 }
 
   //authenticate methods
-  final String baseUrl = "http://localhost:5232/api/auth";
+  final String baseUrl = "http://61.4.102.150/api/auth";
 
   Future<void> _authenticate() async {
     setState(() => _isLoading = true);
