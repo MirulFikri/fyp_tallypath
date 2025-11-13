@@ -77,7 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      _userData?["fullName"] ?? "",
+                      _userData?["fullName"] ?? "null",
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -85,7 +85,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _userData?["email"] ?? "",
+                      _userData?["email"] ?? "null",
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -93,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _userData?["mobile"] ?? "",
+                      _userData?["mobile"] ?? "null",
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
