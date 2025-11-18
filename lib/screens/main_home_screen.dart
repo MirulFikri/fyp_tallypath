@@ -9,6 +9,7 @@ class MainHomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFE8F9F5),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
