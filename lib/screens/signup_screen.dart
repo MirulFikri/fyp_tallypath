@@ -239,7 +239,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               
               // Mobile Number Field
               const Text(
-                'Mobile Number',
+                'Mobile Number (Optional)',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.black87,
@@ -261,9 +261,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     border: InputBorder.none,
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your mobile number';
-                    }
                     return null;
                   },
                 ),
@@ -308,7 +305,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               
               // Date of Birth Field
               const Text(
-                'Date Of Birth',
+                'Date Of Birth (Optional)',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.black87,
@@ -332,9 +329,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     suffixIcon: Icon(Icons.calendar_today_outlined),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select your date of birth';
-                    }
                     return null;
                   },
                 ),
