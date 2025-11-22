@@ -108,7 +108,7 @@ class GroupsScreen extends StatelessWidget {
                     children: [
                       ElevatedButton.icon(//create group button
                         onPressed: () {
-
+                          createGroupPopup(context);
                         },
                         icon: const Icon(Icons.add, size: 18),
                         label: const Text('Create', style: TextStyle(fontSize: 12)),
@@ -123,7 +123,7 @@ class GroupsScreen extends StatelessWidget {
                       const SizedBox(width: 8),
                       ElevatedButton.icon(//join group button
                         onPressed: () {
-                          
+                          joinGroupPopup(context);
                         },
                         icon: const Icon(Icons.group_add, size: 18),
                         label: const Text('Join', style: TextStyle(fontSize: 12)),
@@ -318,4 +318,49 @@ class GroupsScreen extends StatelessWidget {
       )
     );
   }
+}
+
+void createGroupPopup(BuildContext context){
+  showDialog(
+    context: context,
+    builder: (context){
+      return SimpleDialog(
+        title: Text("Create Group"),
+        children:[
+          Container(
+            padding: EdgeInsets.all(80.0),
+            child: ElevatedButton(
+              child: Text("Close"),
+              onPressed: (){
+                Navigator.pop(context);
+              }
+            )
+          )
+        ]
+      );
+    }
+  );
+}
+
+
+void joinGroupPopup(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return SimpleDialog(
+        title: Text("Join Group"),
+        children: [
+          Container(
+            padding: EdgeInsets.all(80.0),
+            child: ElevatedButton(
+              child: Text("Close"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }
