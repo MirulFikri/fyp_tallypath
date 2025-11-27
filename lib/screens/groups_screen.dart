@@ -108,7 +108,10 @@ class GroupsScreen extends StatelessWidget {
                     children: [
                       ElevatedButton.icon(//create group button
                         onPressed: () {
-                          createGroupPopup(context);
+                            showDialog(
+                            context: context,
+                            builder: (_) => CreateGroupDialog(),
+                          );
                         },
                         icon: const Icon(Icons.add, size: 18),
                         label: const Text('Create', style: TextStyle(fontSize: 12)),
@@ -320,47 +323,101 @@ class GroupsScreen extends StatelessWidget {
   }
 }
 
-void createGroupPopup(BuildContext context){
-  showDialog(
-    context: context,
-    builder: (context){
-      return SimpleDialog(
-        title: Text("Create Group"),
-        children:[
-          Container(
-            padding: EdgeInsets.all(80.0),
-            child: ElevatedButton(
-              child: Text("Close"),
-              onPressed: (){
-                Navigator.pop(context);
-              }
-            )
-          )
-        ]
-      );
-    }
-  );
+
+void joinGroupPopup(BuildContext context) {
+
 }
 
 
-void joinGroupPopup(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return SimpleDialog(
-        title: Text("Join Group"),
-        children: [
-          Container(
-            padding: EdgeInsets.all(80.0),
-            child: ElevatedButton(
-              child: Text("Close"),
-              onPressed: () {
-                Navigator.pop(context);
-              },
+
+class CreateGroupDialog extends StatelessWidget {
+  const CreateGroupDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        width: 400,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Title
+            const Text(
+              "Create New Group",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-          ),
-        ],
-      );
-    },
-  );
+
+            const SizedBox(height: 16),
+
+            // Group name
+            TextField(
+              decoration: InputDecoration(
+                labelText: "Group Name",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Description
+            TextField(
+              maxLines: 2,
+              decoration: InputDecoration(
+                labelText: "Description",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Search people
+            TextField(
+              decoration: InputDecoration(
+                labelText: "Search people to invite",
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Container(
+              height: 100,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text(
+                  "Search results appear here",
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {},
+                  child: const Text("Create"),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
