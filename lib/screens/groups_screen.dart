@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:http/http.dart' as http;
@@ -435,7 +436,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                 ElevatedButton(
                   onPressed: () {
                     if(_formKey.currentState!.validate()){
-                     _createGroupApi(); 
+                     _createGroupApi();
                     }
                   },
                   child: _isLoading ? const CircularProgressIndicator() : const Text('Create'),
@@ -472,8 +473,70 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
           if (data != null) {
             debugPrint("response : ${data.toString()}");
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Successfully created group")),);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Successfully created group!")));
               Navigator.pop(context);
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return Dialog(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      width: 300,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "${data["name"]} - Invite Code",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Code display with copy button
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SelectableText(
+                                data["joinCode"],
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              IconButton(
+                                icon: const Icon(Icons.copy),
+                                tooltip: "Copy to clipboard",
+                                onPressed: () {
+                                  Clipboard.setData(ClipboardData(text: "joinCode"));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("Code copied!")),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 30),
+
+                          // Close button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("Close"),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
             }
           }
       } else {
@@ -485,6 +548,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       setState(() { _isLoading = false;});
     }
   }
+
 }
 
 
