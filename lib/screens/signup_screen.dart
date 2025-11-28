@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'login_screen.dart';
 import 'main_navigation_screen.dart';
@@ -36,12 +37,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
 
-  //authenticate methods
-  final String baseUrl = "http://61.4.102.150/api/auth";
 
   // KEEP IN SYNC WITH login_screen.dart authenticate()
   Future<void> _login() async{
-    final url = Uri.parse("$baseUrl/login");
+    final url = Uri.parse("${Globals.baseUrl}/api/auth/login");
     final body = jsonEncode({
       "identifier": _emailController.text.trim(),
       "password": _passwordController.text.trim(),
@@ -84,7 +83,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _authenticate() async {
     setState(() => _isLoading = true);
 
-    final url = Uri.parse("$baseUrl/register");
+    final url = Uri.parse("${Globals.baseUrl}/api/auth/register");
     final body = jsonEncode({
       "username": _usernameController.text.trim(),
       "password": _passwordController.text.trim(),

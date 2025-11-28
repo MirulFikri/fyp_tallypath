@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fyp_tallypath/globals.dart';
 import 'signup_screen.dart';
 import 'main_navigation_screen.dart';
 import 'package:http/http.dart' as http;
@@ -38,54 +38,57 @@ Future<void> _loadFakeUser() async{
   await UserData().fromJson(data);
 }
 
-  //authenticate methods
-  final String baseUrl = "http://61.4.102.150/api/auth";
 
   // KEEP IN SYNC WITH signup_screen.dart login()
-  Future<void> _authenticate() async {
-    setState(() => _isLoading = true);
+  Future<void> _login() async {
 
-    final url = Uri.parse("$baseUrl/login");
-    final body = jsonEncode({
-      "identifier": _identifierController.text.trim(),
-      "password": _passwordController.text.trim(),
-    });
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
 
-    try {
-      final res = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: body,
-      );
+      final url = Uri.parse("${Globals.baseUrl}/api/auth/login");
+      final body = jsonEncode({
+        "identifier": _identifierController.text.trim(),
+        "password": _passwordController.text.trim(),
+      });
 
-      if (res.statusCode == 200) {
-          final data = jsonDecode(res.body);
-          final token = data["token"];
-          if (token != null) {
-            //load user
-            await UserData().fromJson(data);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Login successful!")),
-              );
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-              );
+      try {
+        final res = await http.post(
+          url,
+          headers: {"Content-Type": "application/json"},
+          body: body,
+        );
+
+        if (res.statusCode == 200) {
+            final data = jsonDecode(res.body);
+            final token = data["token"];
+            if (token != null) {
+              //load user
+              await UserData().fromJson(data);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Login successful!")),
+                );
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+                );
+              }
             }
-          }
-      } else {
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
+        }
+      } catch (e) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
+        ).showSnackBar(SnackBar(content: Text("Network error: $e")));
+      } finally {
+        setState(() => _isLoading = false);
       }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Network error: $e")));
-    } finally {
-      setState(() => _isLoading = false);
+
     }
+
   }
 
 
@@ -96,11 +99,6 @@ Future<void> _loadFakeUser() async{
     super.dispose();
   }
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      _authenticate();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

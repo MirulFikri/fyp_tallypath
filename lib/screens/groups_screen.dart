@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/globals.dart';
+import 'package:fyp_tallypath/user_data.dart';
+import 'package:http/http.dart' as http;
 
 class GroupsScreen extends StatelessWidget {
   const GroupsScreen({super.key});
@@ -330,8 +335,17 @@ void joinGroupPopup(BuildContext context) {
 
 
 
-class CreateGroupDialog extends StatelessWidget {
+class CreateGroupDialog extends StatefulWidget {
   const CreateGroupDialog({super.key});
+
+  @override
+  State<CreateGroupDialog> createState() => _CreateGroupDialogState();
+}
+
+class _CreateGroupDialogState extends State<CreateGroupDialog> {
+  final _groupNameController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -340,7 +354,9 @@ class CreateGroupDialog extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         width: 400,
-        child: Column(
+        child: Form(
+          key: _formKey,
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Title
@@ -352,11 +368,18 @@ class CreateGroupDialog extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Group name
-            TextField(
+            TextFormField(
               decoration: InputDecoration(
                 labelText: "Group Name",
                 border: OutlineInputBorder(),
               ),
+              controller: _groupNameController,
+              validator: (value){
+                if (value == null || value.isEmpty) {
+                  return 'Group name can\'t be empty';
+                }
+                return null;
+              }
             ),
 
             const SizedBox(height: 12),
@@ -410,14 +433,58 @@ class CreateGroupDialog extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: () {},
-                  child: const Text("Create"),
+                  onPressed: () {
+                    if(_formKey.currentState!.validate()){
+                     _createGroupApi(); 
+                    }
+                  },
+                  child: _isLoading ? const CircularProgressIndicator() : const Text('Create'),
                 ),
               ],
             ),
           ],
         ),
+        ),
       ),
     );
   }
+
+  Future<void> _createGroupApi() async{
+    setState(() => _isLoading = true);
+    final url = Uri.parse("${Globals.baseUrl}/api/groups/create");
+    final String body = jsonEncode(<String, dynamic>{
+      "name": _groupNameController.text.trim(),
+      "memberIds": ["${UserData().id}"]
+    });
+    debugPrint("post :  $body");
+    try {
+      final res = await http.post(
+        url,
+        headers: <String, String>{
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${UserData().token}",
+        },
+        body: body,
+      );
+
+      if (res.statusCode == 200) {
+          final data = jsonDecode(res.body);
+          if (data != null) {
+            debugPrint("response : ${data.toString()}");
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Successfully created group")),);
+              Navigator.pop(context);
+            }
+          }
+      } else {
+        ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("Network error: $e")));
+    }finally{
+      setState(() { _isLoading = false;});
+    }
+  }
 }
+
+
