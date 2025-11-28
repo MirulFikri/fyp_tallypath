@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'welcome_screen.dart';
-import 'dart:convert';
+import 'package:fyp_tallypath/user_data.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,9 +14,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _userData;
 
   static Future<void> _logout(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('jwt');
-    await prefs.clear();
+    await UserData().clear();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const WelcomeScreen()),
@@ -24,19 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  @override
-  void initState() {
-    _loadUser();
-    super.initState();
-  }
 
-
-  void _loadUser() async{
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _userData = jsonDecode(prefs.getString('user') ?? "");
-    });
-  }
   @override
   Widget build(BuildContext context){
     return Scaffold(
@@ -78,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      _userData?["fullName"] ?? "null",
+                      UserData().fullname ?? "null",
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -86,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _userData?["email"] ?? "null",
+                      UserData().email ?? "null",
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -94,7 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _userData?["mobile"] ?? "null",
+                      UserData().mobile ?? "null",
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],

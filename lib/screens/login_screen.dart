@@ -5,6 +5,7 @@ import 'main_navigation_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:fyp_tallypath/user_data.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,22 +26,22 @@ Future<void> _loadFakeUser() async{
   final data = jsonDecode("""{
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
   "user": {
-    "id": 12,
+    "id": "6dea7f36-e231-49bd-8534-9e805a69257e",
     "username": "johndoe",
     "email": "johndoe@example.com",
-    "fullName": "John Doe",
+    "fullname": "John Doe",
     "mobile": "+60123456789",
     "dob":"1/2/2003"
   }
 }""");
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString("jwt", data['token']);
-  await prefs.setString('user', jsonEncode(data['user']));
+
+  await UserData().fromJson(data);
 }
 
   //authenticate methods
   final String baseUrl = "http://61.4.102.150/api/auth";
 
+  // KEEP IN SYNC WITH signup_screen.dart login()
   Future<void> _authenticate() async {
     setState(() => _isLoading = true);
 
@@ -61,10 +62,8 @@ Future<void> _loadFakeUser() async{
           final data = jsonDecode(res.body);
           final token = data["token"];
           if (token != null) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString("jwt", token);
-            await prefs.setString('user', jsonEncode(data['user']));
-
+            //load user
+            await UserData().fromJson(data);
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text("Login successful!")),

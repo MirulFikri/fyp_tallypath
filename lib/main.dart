@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'screens/splash_screen.dart';
+import 'package:fyp_tallypath/user_data.dart';
 
-void main() {
+void main() async{
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
     ),
   );
+  WidgetsFlutterBinding.ensureInitialized();
+  await UserData().init();
   runApp(const MyApp());
 }
 

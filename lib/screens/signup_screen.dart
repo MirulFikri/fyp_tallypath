@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/user_data.dart';
 import 'login_screen.dart';
 import 'main_navigation_screen.dart';
 import 'package:http/http.dart' as http;
@@ -35,9 +36,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
 
-    //authenticate methods
+  //authenticate methods
   final String baseUrl = "http://61.4.102.150/api/auth";
 
+  // KEEP IN SYNC WITH login_screen.dart authenticate()
   Future<void> _login() async{
     final url = Uri.parse("$baseUrl/login");
     final body = jsonEncode({
@@ -56,10 +58,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           final data = jsonDecode(res.body);
           final token = data["token"];
           if (token != null) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString("jwt", token);
-            await prefs.setString('user', jsonEncode(data['user']));
-
+            await UserData().fromJson(data);
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text("Login successful!")),
@@ -387,7 +386,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
               // Sign Up Button
               ElevatedButton(
                 onPressed: _signUp,
-                child: const Text('Sign Up'),
+                child:
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('Sign Up')
               ),
               const SizedBox(height: 24),
               
