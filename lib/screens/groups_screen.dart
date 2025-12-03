@@ -456,7 +456,6 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       "name": _groupNameController.text.trim(),
       "memberIds": ["${UserData().id}"]
     });
-    debugPrint("post :  $body");
     try {
       final res = await http.post(
         url,
@@ -470,7 +469,6 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       if (res.statusCode == 200) {
           final data = jsonDecode(res.body);
           if (data != null) {
-            debugPrint("response : ${data.toString()}");
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Successfully created group!")));
               Navigator.pop(context);
@@ -571,14 +569,15 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
 
 
 class JoinGroupDialog extends StatefulWidget {
-  const JoinGroupDialog({super.key});
+  final String? defaultCode;
+  const JoinGroupDialog({super.key, this.defaultCode});
 
   @override
   State<JoinGroupDialog> createState() => _JoinGroupDialogState();
 }
 
 class _JoinGroupDialogState extends State<JoinGroupDialog> {
-  final _inviteCodeController = TextEditingController();
+  late final _inviteCodeController = TextEditingController(text: widget.defaultCode);
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
