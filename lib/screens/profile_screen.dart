@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'welcome_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
 
@@ -11,7 +10,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  Map<String, dynamic>? _userData;
 
   static Future<void> _logout(BuildContext context) async {
     await UserData().clear();
