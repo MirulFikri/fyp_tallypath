@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'main_home_screen.dart';
 import 'groups_screen.dart';
 import 'savings_screen.dart';
@@ -28,8 +29,43 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   @override
+  void initState(){
+    super.initState();
+
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, String? result) async {
+        if (didPop) {
+          return; // If the pop already happened, do nothing
+        }
+        final bool? shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text('Confirm Exit'),
+              content: Text('Are you sure you want to leave this page?'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false), // Stay
+                  child: Text('Stay'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true), // Leave
+                  child: Text('Leave'),
+                ),
+              ],
+            );
+          },
+        );
+        if (shouldPop == true) {
+          SystemNavigator.pop(); // Pop the current screen
+        }
+      },
+      child: Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -74,6 +110,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ],
         ),
       ),
+      )
     );
   }
 }
