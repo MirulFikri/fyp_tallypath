@@ -4,7 +4,6 @@ import 'signup_screen.dart';
 import 'main_navigation_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:fyp_tallypath/user_data.dart';
 
 class LoginScreen extends StatefulWidget {
