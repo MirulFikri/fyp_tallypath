@@ -21,23 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
 
-//delete this after backend is live
-Future<void> _loadFakeUser() async{
-  final data = jsonDecode("""{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-  "user": {
-    "id": "6dea7f36-e231-49bd-8534-9e805a69257e",
-    "username": "johndoe",
-    "email": "johndoe@example.com",
-    "fullname": "John Doe",
-    "mobile": "+60123456789",
-    "dob":"1/2/2003"
-  }
-}""");
-
-  await UserData().fromJson(data);
-}
-
 
   // KEEP IN SYNC WITH signup_screen.dart login()
   Future<void> _login() async {
@@ -209,27 +192,6 @@ Future<void> _loadFakeUser() async{
                         ),
                         const SizedBox(height: 16),
                         
-                        //bypass login when backend not connected
-                        kDebugMode
-                            ? ElevatedButton(
-                              onPressed: () {
-                                _loadFakeUser();
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const MainNavigationScreen(),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 239, 232, 232),
-                                foregroundColor: Colors.black,
-                              ),
-                              child: const Text('Bypass Login (visible only on debug)'),
-                            )
-                            : SizedBox(height: 20),
-                            
-                        // Forgot Password
                         Center(
                           child: TextButton(
                             onPressed: () {
