@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fyp_tallypath/user_data.dart';
 import 'dart:async';
 import 'welcome_screen.dart';
 import 'main_navigation_screen.dart';
@@ -31,12 +31,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuth() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('jwt');
 
-    await Future.delayed(const Duration(seconds: 1)); // simulate loading
-
-    if (token != null && token.isNotEmpty) {
+    if (UserData().isLoggedIn()) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const MainNavigationScreen()),

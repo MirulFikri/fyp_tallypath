@@ -128,4 +128,8 @@ class UserData {
     await prefs.remove("token");
     await prefs.remove("user");
   }
+
+  bool isLoggedIn(){
+    return !(token==null||token=="");
+  }
 }
