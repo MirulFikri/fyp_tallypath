@@ -47,7 +47,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           builder: (context) {
             return AlertDialog(
               title: Text('Confirm Exit'),
-              content: Text('Are you sure you want to leave this page?'),
+              content: Text('Are you sure you want to exit Tallypath?'),
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false), // Stay

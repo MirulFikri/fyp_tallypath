@@ -58,9 +58,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
           if (token != null) {
             await UserData().fromJson(data);
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Login successful!")),
-              );
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const MainNavigationScreen()),

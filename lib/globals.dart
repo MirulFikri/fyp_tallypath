@@ -1,3 +1,3 @@
 class Globals {
-  static final String baseUrl = "https://tallypath.my";
+  static const String baseUrl = String.fromEnvironment('API_URL', defaultValue: 'https://tallypath.my');
 }
