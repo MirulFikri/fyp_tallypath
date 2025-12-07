@@ -3,12 +3,27 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fyp_tallypath/globals.dart';
+import 'package:fyp_tallypath/screens/group_main_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:http/http.dart' as http;
 
-class GroupsScreen extends StatelessWidget {
+class GroupsScreen extends StatefulWidget {
   const GroupsScreen({super.key});
 
+  @override
+  State<GroupsScreen> createState() => _GroupsScreenState();
+}
+
+class _GroupsScreenState extends State<GroupsScreen> {
+
+  final plan = {
+    'title': 'Personal Spending',
+    'target': 5000.00,
+    'current': 1500.00,
+    'deadline': DateTime(2027, 6, 30),
+    'icon': Icons.trending_up,
+  };
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,7 +69,7 @@ class GroupsScreen extends StatelessWidget {
                 ),
                 child: InkWell(
                   onTap:(){
-                    print('tapped personal spending');
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => GroupMainScreen(plan: plan)));
                   }, 
                   child: Column(
                     children: [
