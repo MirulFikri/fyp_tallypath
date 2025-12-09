@@ -35,7 +35,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
   }
 
   // All savings goals - simple structure
-  final List<Map<String, dynamic>> allPlans = [
+  final List<Map<String, dynamic>> allGoals = [
     {
       'title': 'New Laptop',
       'target': 3000.00,
@@ -73,44 +73,44 @@ class _SavingsScreenState extends State<SavingsScreen> {
     },
   ];
 
-  // Filter plans based on selected filter
-  List<Map<String, dynamic>> get filteredPlans {
+  // Filter goals based on selected filter
+  List<Map<String, dynamic>> get filteredGoals {
     if (selectedFilter == 'Active') {
-      return allPlans.where((plan) {
-        double progress = plan['current'] / plan['target'];
+      return allGoals.where((goal) {
+        double progress = goal['current'] / goal['target'];
         return progress < 1.0;
       }).toList();
     } else if (selectedFilter == 'Completed') {
-      return allPlans.where((plan) {
-        double progress = plan['current'] / plan['target'];
+      return allGoals.where((goal) {
+        double progress = goal['current'] / goal['target'];
         return progress >= 1.0;
       }).toList();
     }
-    return allPlans; // All
+    return allGoals; // All
   }
 
-  // Calculate total savings from all plans
+  // Calculate total savings from all goals
   double get totalSavings {
-    return allPlans.fold(0.0, (sum, plan) => sum + plan['current']);
+    return allGoals.fold(0.0, (sum, goal) => sum + goal['current']);
   }
 
-  // Calculate total target from all plans
+  // Calculate total target from all goals
   double get totalTarget {
-    return allPlans.fold(0.0, (sum, plan) => sum + plan['target']);
+    return allGoals.fold(0.0, (sum, goal) => sum + goal['target']);
   }
 
-  // Calculate number of active plans (plans with progress < 100%)
-  int get activePlans {
-    return allPlans.where((plan) {
-      double progress = plan['current'] / plan['target'];
+  // Calculate number of active goals (goals with progress < 100%)
+  int get activeGoals {
+    return allGoals.where((goal) {
+      double progress = goal['current'] / goal['target'];
       return progress < 1.0;
     }).length;
   }
 
-  // Calculate completed plans (plans with progress >= 100%)
-  int get completedPlans {
-    return allPlans.where((plan) {
-      double progress = plan['current'] / plan['target'];
+  // Calculate completed goals (goals with progress >= 100%)
+  int get completedGoals {
+    return allGoals.where((goal) {
+      double progress = goal['current'] / goal['target'];
       return progress >= 1.0;
     }).length;
   }
@@ -203,13 +203,13 @@ class _SavingsScreenState extends State<SavingsScreen> {
                           height: 30,
                           color: Colors.white30,
                         ),
-                        _buildSavingsStat('Active', '$activePlans'),
+                        _buildSavingsStat('Active', '$activeGoals'),
                         Container(
                           width: 1,
                           height: 30,
                           color: Colors.white30,
                         ),
-                        _buildSavingsStat('Completed', '$completedPlans'),
+                        _buildSavingsStat('Completed', '$completedGoals'),
                       ],
                     ),
                   ],
@@ -229,8 +229,8 @@ class _SavingsScreenState extends State<SavingsScreen> {
               ),
               const SizedBox(height: 24),
               
-              // Savings Plans
-              ...filteredPlans.map((plan) => _buildSavingsCard(plan)),
+              // Savings Goals
+              ...filteredGoals.map((goal) => _buildSavingsCard(goal)),
             ],
           ),
         ),
@@ -240,7 +240,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
         backgroundColor: const Color(0xFF00D4AA),
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
-          'New Plan',
+          'New Goal',
           style: TextStyle(color: Colors.white),
         ),
       ),
@@ -298,16 +298,16 @@ class _SavingsScreenState extends State<SavingsScreen> {
     );
   }
 
-  Widget _buildSavingsCard(Map<String, dynamic> plan) {
-    double progress = plan['current'] / plan['target'];
-    DateTime? deadline = plan['deadline'];
+  Widget _buildSavingsCard(Map<String, dynamic> goal) {
+    double progress = goal['current'] / goal['target'];
+    DateTime? deadline = goal['deadline'];
 
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => SavingsDetailScreen(plan: plan),
+            builder: (context) => SavingsDetailScreen(plan: goal),
           ),
         );
       },
@@ -329,7 +329,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     color: const Color(0xFFD4F4ED),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(plan['icon'], color: const Color(0xFF00D4AA)),
+                  child: Icon(goal['icon'], color: const Color(0xFF00D4AA)),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -337,7 +337,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        plan['title'],
+                        goal['title'],
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -368,7 +368,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  formatCurrency(plan['current']),
+                  formatCurrency(goal['current']),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -376,7 +376,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                   ),
                 ),
                 Text(
-                  'of ${formatCurrency(plan['target'])}',
+                  'of ${formatCurrency(goal['target'])}',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],
