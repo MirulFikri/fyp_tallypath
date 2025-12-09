@@ -102,14 +102,15 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
               const SizedBox(height: 16),
 
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [...contributions.map((contribution) => _buildContributionItem(contribution)),]
-                  )
+            Expanded(
+              child: SingleChildScrollView(
+                reverse: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _buildExpenseListWithDates(expenses),
                 ),
               ),
+            ),
 
             ],
           ),
@@ -118,9 +119,38 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
     );
   }
 
-  Widget _buildContributionItem(Map<String, dynamic> contribution) {
-    DateTime date = contribution['date'];
-    String dateStr = '${date.day}/${date.month}/${date.year}';
+  List<Widget> _buildExpenseListWithDates(List expenses) {
+    List<Widget> widgets = [];
+    DateTime? lastDate;
+
+    for (final expense in expenses) {
+      final currentDate = DateTime(expense['dateTime'].year, expense['dateTime'].month, expense['dateTime'].day);
+      final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day );
+
+      if (lastDate == null || currentDate != lastDate) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0), 
+            child: Center(child: Text(
+              currentDate == today ? 'Today' : '${currentDate.day}/${currentDate.month}/${currentDate.year}',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Color(0xFF00A885)),
+            ),
+          ),),
+        );
+        lastDate = currentDate;
+      }
+
+      widgets.add(_buildExpenseItem(expense));
+    }
+
+    return widgets;
+  }
+
+
+  Widget _buildExpenseItem(Map<String, dynamic> expense) {
+    DateTime dateTime = expense['dateTime'];
+    //String dateStr = '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    String timeStr = '${dateTime.hour}:${dateTime.minute}';
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -149,7 +179,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  contribution['note'],
+                  expense['title'],
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
@@ -157,36 +187,23 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  dateStr,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
+                  Globals.formatCurrency(expense['amount']),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF00D4AA)),
                 ),
               ],
             ),
           ),
-          Text(
-            '+${Globals.formatCurrency(contribution['amount'])}',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Color(0xFF00D4AA),
-            ),
-          ),
+
+          Text(timeStr, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
         ],
       ),
     );
   }
 
-    List<Map<String, dynamic>> contributions = [
-      {'amount': 500.00, 'note': 'Initial deposit', 'date': DateTime(2025, 10, 1)},
-      {'amount': 800.00, 'note': 'October savings', 'date': DateTime(2025, 10, 15)},
-      {'amount': 300.00, 'note': 'Bonus monney', 'date': DateTime(2025, 11, 1)},
-      {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
-      {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
-      {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
-      {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
+    List<Map<String, dynamic>> expenses = [
+      {'amount': 500.00, 'title': 'Initial deposit', 'dateTime': DateTime(2025,8,8,9,18)},
+      {'amount': 800.00, 'title': 'October savings', 'dateTime': DateTime.now()},
+      {'amount': 300.00, 'title': 'Bonus monney', 'dateTime': DateTime.now()},
     ];
 
 
