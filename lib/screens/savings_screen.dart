@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/globals.dart';
 import 'savings_detail_screen.dart';
 
 class SavingsScreen extends StatefulWidget {
@@ -11,28 +12,6 @@ class SavingsScreen extends StatefulWidget {
 class _SavingsScreenState extends State<SavingsScreen> {
   String selectedFilter = 'All'; // All, Active, Completed
 
-  // Number formatter with comma separators
-  String formatCurrency(double amount) {
-    // Simple implementation without external package
-    String amountStr = amount.toStringAsFixed(2);
-    List<String> parts = amountStr.split('.');
-    String integerPart = parts[0];
-    String decimalPart = parts[1];
-    
-    // Add commas to integer part
-    String result = '';
-    int count = 0;
-    for (int i = integerPart.length - 1; i >= 0; i--) {
-      if (count == 3) {
-        result = ',$result';
-        count = 0;
-      }
-      result = integerPart[i] + result;
-      count++;
-    }
-    
-    return 'RM $result.$decimalPart';
-  }
 
   // All savings goals - simple structure
   final List<Map<String, dynamic>> allGoals = [
@@ -186,7 +165,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      formatCurrency(totalSavings),
+                      Globals.formatCurrency(totalSavings),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 36,
@@ -197,7 +176,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildSavingsStat('Target', formatCurrency(totalTarget).substring(3)),
+                        _buildSavingsStat('Target', Globals.formatCurrency(totalTarget).substring(3)),
                         Container(
                           width: 1,
                           height: 30,
@@ -368,7 +347,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  formatCurrency(goal['current']),
+                  Globals.formatCurrency(goal['current']),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -376,7 +355,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                   ),
                 ),
                 Text(
-                  'of ${formatCurrency(goal['target'])}',
+                  'of ${Globals.formatCurrency(goal['target'])}',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],

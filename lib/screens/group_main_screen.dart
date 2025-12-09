@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/globals.dart';
 
 class GroupMainScreen extends StatefulWidget {
   final Map<String, dynamic> plan;
@@ -14,11 +15,9 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double progress = widget.plan['current'] / widget.plan['target'];
-    DateTime? deadline = widget.plan['deadline'];
 
     return Scaffold(
-      persistentFooterButtons: [BigAddButton(onPressed: () {}, height: 60)],
+      persistentFooterButtons: [BigAddButton(onPressed: _addExpenseDialog, height: 60)],
       backgroundColor: const Color(0xFFE8F9F5),
       appBar: AppBar(
         backgroundColor: Color(0xFF00D4AA),
@@ -65,93 +64,43 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(
-                            widget.plan['icon'],
-                            color: Colors.white,
-                            size: 32,
-                          ),
+                          child: Icon(Icons.payments_sharp, color: Colors.white, size: 32),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Current Savings',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
+                              const Text('Total Spending', style: TextStyle(color: Colors.white70, fontSize: 14)),
                               const SizedBox(height: 4),
                               Text(
-                                formatCurrency(widget.plan['current']),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                Globals.formatCurrency(widget.plan['current']),
+                                style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: LinearProgressIndicator(
-                        value: progress.clamp(0.0, 1.0),
-                        backgroundColor: Colors.white.withOpacity(0.3),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                        minHeight: 8,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${(progress * 100).toInt()}% completed',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          'Goal: ${formatCurrency(widget.plan['target'])}',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
+                    
+
+                    SizedBox(height: 36),
+                    SegmentedProgressBar(
+                      segments: [
+                        Segment(label: 'Foodd', value: 40, color: const Color.fromARGB(255, 156, 255, 159)),
+                        Segment(label: 'Rent', value: 30, color: const Color.fromARGB(255, 130, 199, 255)),
+                        Segment(label: 'Transport', value: 20, color: const Color.fromARGB(255, 249, 201, 129)),
+                        Segment(label: 'Other', value: 10, color: const Color.fromARGB(255, 235, 235, 235)),
                       ],
+                      borderRadius: 4,
+                      height: 12,
                     ),
-                    if (deadline != null) ...[
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.calendar_today,
-                            color: Colors.white70,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            getDeadlineText(deadline),
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                    //const SizedBox(height:20),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+
+              const SizedBox(height: 16),
 
               Expanded(
                 child: SingleChildScrollView(
@@ -185,12 +134,12 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFD4F4ED),
+              color: Color.fromARGB(255, 210, 232, 255),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               Icons.add,
-              color: Color(0xFF00D4AA),
+              color: Color.fromARGB(255, 255, 255, 255),
               size: 20,
             ),
           ),
@@ -218,7 +167,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
             ),
           ),
           Text(
-            '+${formatCurrency(contribution['amount'])}',
+            '+${Globals.formatCurrency(contribution['amount'])}',
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
@@ -231,57 +180,20 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
   }
 
     List<Map<String, dynamic>> contributions = [
-    {'amount': 500.00, 'note': 'Initial deposit', 'date': DateTime(2025, 10, 1)},
-    {'amount': 800.00, 'note': 'October savings', 'date': DateTime(2025, 10, 15)},
-    {'amount': 300.00, 'note': 'Bonus monney', 'date': DateTime(2025, 11, 1)},
-    {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
-        {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
-            {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
-                {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
-  ];
+      {'amount': 500.00, 'note': 'Initial deposit', 'date': DateTime(2025, 10, 1)},
+      {'amount': 800.00, 'note': 'October savings', 'date': DateTime(2025, 10, 15)},
+      {'amount': 300.00, 'note': 'Bonus monney', 'date': DateTime(2025, 11, 1)},
+      {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
+      {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
+      {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
+      {'amount': 500.00, 'note': 'November savings', 'date': DateTime(2025, 11, 10)},
+    ];
 
-  String formatCurrency(double amount) {
-    String amountStr = amount.toStringAsFixed(2);
-    List<String> parts = amountStr.split('.');
-    String integerPart = parts[0];
-    String decimalPart = parts[1];
 
-    String result = '';
-    int count = 0;
-    for (int i = integerPart.length - 1; i >= 0; i--) {
-      if (count == 3) {
-        result = ',$result';
-        count = 0;
-      }
-      result = integerPart[i] + result;
-      count++;
-    }
-
-    return 'RM $result.$decimalPart';
-  }
-
-  String getDeadlineText(DateTime? deadline) {
-    if (deadline == null) return 'No deadline';
-
-    DateTime now = DateTime.now();
-    int daysRemaining = deadline.difference(now).inDays;
-
-    String dateStr = '${deadline.day}/${deadline.month}/${deadline.year}';
-
-    if (daysRemaining < 0) {
-      return '$dateStr (overdue)';
-    } else if (daysRemaining == 0) {
-      return '$dateStr (today)';
-    } else if (daysRemaining <= 30) {
-      return '$dateStr ($daysRemaining days left)';
-    } else {
-      return dateStr;
-    }
-  }
-
-  void _showAddContributionDialog() {
+  void _addExpenseDialog() {
+    final TextEditingController titleController = TextEditingController();
     final TextEditingController amountController = TextEditingController();
-    final TextEditingController noteController = TextEditingController();
+    final TextEditingController descController= TextEditingController();
 
     showDialog(
       context: context,
@@ -293,6 +205,20 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Text('Title', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  hintText: 'New Expense',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF00D4AA)),
+                  ),
+                ),
+              ),
+              const SizedBox(height:16),
               const Text('Amount', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               TextField(
@@ -309,12 +235,12 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text('Note (Optional)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const Text('Description (Optional)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               TextField(
-                controller: noteController,
+                controller: descController,
                 decoration: InputDecoration(
-                  hintText: 'e.g., November savings',
+                  hintText: 'Expense details',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -328,7 +254,17 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                   Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 8),
                   Text(
-                    'Date: ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}',
+                    '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Icon(Icons.watch_later_outlined, size: 16, color: Colors.grey[600]),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${DateTime.now().hour}:${DateTime.now().minute}',
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
@@ -346,21 +282,20 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
               onPressed: () {
                 double? amount = double.tryParse(amountController.text);
                 if (amount != null && amount > 0) {
-                  // TODO: Save contribution to database
                   setState(() {
-                    widget.plan['current'] += amount;
-                    contributions.insert(0, {
-                      'amount': amount,
-                      'note': noteController.text.isEmpty ? 'Contribution' : noteController.text,
-                      'date': DateTime.now(),
-                    });
+                    // widget.plan['current'] += amount;
+                    // contributions.insert(0, {
+                    //   'amount': amount,
+                    //   'note': noteController.text.isEmpty ? 'Contribution' : noteController.text,
+                    //   'date': DateTime.now(),
+                    // });
                   });
 
                   Navigator.pop(context);
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Added ${formatCurrency(amount)} to ${widget.plan['title']}'),
+                      content: Text('Added ${Globals.formatCurrency(amount)} to ${widget.plan['title']}'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -406,6 +341,8 @@ class BigAddButton extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
     this.boxShadow,
   });
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -486,3 +423,89 @@ class BigAddButton extends StatelessWidget {
     );
   }
 }
+
+
+class Segment {
+  final double value;
+  final Color color;
+  final String label;
+
+  Segment({required this.value, required this.color, required this.label});
+}
+
+class SegmentedProgressBar extends StatefulWidget {
+  final List<Segment> segments;
+  final double height;
+  final double borderRadius;
+  final Color backgroundColor;
+
+  const SegmentedProgressBar({
+    super.key,
+    required this.segments,
+    this.height = 14,
+    this.borderRadius = 5,
+    this.backgroundColor = const Color(0xFFE0E0E0),
+  });
+
+  @override
+  State<SegmentedProgressBar> createState() => _SegmentedProgressBarState();
+}
+
+class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
+  @override
+  Widget build(BuildContext context) {
+    final total = widget.segments.fold<double>(0, (sum, item) => sum + item.value);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          //borderRadius: BorderRadius.circular(borderRadius),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+            ),
+            height: widget.height,
+            
+            child: Row(
+              children:
+                widget.segments.map((s) {
+                  final percent = s.value / total;
+
+                  return Expanded(
+                    flex: (percent * 1000).round(),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(widget.borderRadius),
+                          color: s.color, ),
+                    ),
+                  );
+                }
+              ).toList(),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 12,
+          children:
+              widget.segments.map((s) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(width: 8, height: 8, color: s.color),
+                    const SizedBox(width: 4),
+                    Text(' ${s.label} ${s.value}% ', style: TextStyle(color: Colors.white)),
+                  ],
+                );
+              }).toList(),
+        ),
+      ],
+    );
+
+  }
+
+  
+    
+}
+

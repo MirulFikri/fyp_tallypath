@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/globals.dart';
 
 class SavingsDetailScreen extends StatefulWidget {
   final Map<String, dynamic> plan;
@@ -34,25 +35,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
     },
   ];
 
-  String formatCurrency(double amount) {
-    String amountStr = amount.toStringAsFixed(2);
-    List<String> parts = amountStr.split('.');
-    String integerPart = parts[0];
-    String decimalPart = parts[1];
-    
-    String result = '';
-    int count = 0;
-    for (int i = integerPart.length - 1; i >= 0; i--) {
-      if (count == 3) {
-        result = ',$result';
-        count = 0;
-      }
-      result = integerPart[i] + result;
-      count++;
-    }
-    
-    return 'RM $result.$decimalPart';
-  }
+
 
   String getDeadlineText(DateTime? deadline) {
     if (deadline == null) return 'No deadline';
@@ -177,7 +160,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
                   
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Added ${formatCurrency(amount)} to ${widget.plan['title']}'),
+                      content: Text('Added ${Globals.formatCurrency(amount)} to ${widget.plan['title']}'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -271,7 +254,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                formatCurrency(widget.plan['current']),
+                                Globals.formatCurrency(widget.plan['current']),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 28,
@@ -306,7 +289,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
                           ),
                         ),
                         Text(
-                          'Goal: ${formatCurrency(widget.plan['target'])}',
+                          'Goal: ${Globals.formatCurrency(widget.plan['target'])}',
                           style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 14,
@@ -466,7 +449,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
             ),
           ),
           Text(
-            '+${formatCurrency(contribution['amount'])}',
+            '+${Globals.formatCurrency(contribution['amount'])}',
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
