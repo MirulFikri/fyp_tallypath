@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class Globals {
   static const String baseUrl = String.fromEnvironment('API_URL', defaultValue: 'https://tallypath.my');
 
@@ -19,5 +21,15 @@ class Globals {
     }
 
     return 'RM $result.$decimalPart';
+  }
+
+  static String parseDateToUtc(DateTime dt) {
+    final formatter = DateFormat('yyyy-MM-ddTHH:mm:ss');
+    return "${formatter.format(dt.toUtc())}Z";
+  }
+
+  static DateTime parseDateToLocal(String timeStr){
+    final utc = DateTime.parse(timeStr);
+    return utc.toLocal();
   }
 }

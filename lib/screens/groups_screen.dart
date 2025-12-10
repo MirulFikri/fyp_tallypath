@@ -69,7 +69,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                 ),
                 child: InkWell(
                   onTap:(){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => GroupMainScreen(plan: plan)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => GroupMainScreen(group: plan)));
                   }, 
                   child: Column(
                     children: [
@@ -390,9 +390,9 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
               ),
               controller: _groupNameController,
               validator: (value){
-                if (value == null || value.isEmpty) {
-                  return 'Group name can\'t be empty';
-                }
+                  if (value == null || value.isEmpty) {
+                    return 'Group name can\'t be empty';
+                  }
                 return null;
               }
             ),

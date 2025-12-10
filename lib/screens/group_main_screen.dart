@@ -1,17 +1,54 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
+import 'package:intl/intl.dart';
+import 'package:number_editing_controller/number_editing_controller.dart';
 
 class GroupMainScreen extends StatefulWidget {
-  final Map<String, dynamic> plan;
+  final Map<String, dynamic> group;
 
-  const GroupMainScreen({super.key, required this.plan});
+  const GroupMainScreen({super.key, required this.group});
 
   @override
   State<GroupMainScreen> createState() => _GroupMainScreenState();
 }
 
 class _GroupMainScreenState extends State<GroupMainScreen> {
-  // Mock contribution history (will come from database later)
+
+  final String groupId = "5a12d9bd-f925-4fd5-8efe-b78789edd478";
+  final String groupCreateDate = "2025-12-08T15:53:45.0280187Z";
+  List<dynamic> expenses = [
+    // {'amount': 500.00, 'title': 'Initial deposit', 'createdAt': "2025-12-08T16:53:45.0280187Z"},
+    // {'amount': 800.00, 'title': 'October savings', 'createdAt': DateTime.now().toString()},
+    // {'amount': 300.00, 'title': 'Bonus monney', 'createdAt': DateTime.now().toString()},
+    // {'amount': 800.00, 'title': 'October savings', 'createdAt': DateTime.now().toString()},
+    // {'amount': 300.00, 'title': 'Bonus monney', 'createdAt': DateTime.now().toString()},
+
+  ];
+  bool isLoading = true;
+
+  @override
+  void initState(){
+    super.initState();
+    _loadExpenses();
+    _startAutoRefresh();
+  }
+
+  Timer? _refreshTimer;
+
+  void _startAutoRefresh() {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) => _loadNewExpenses());
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +62,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         centerTitle: false,
         automaticallyImplyLeading: false,
         title: Text(
-          widget.plan['title'],
+          widget.group['title'],
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -74,7 +111,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                               const Text('Total Spending', style: TextStyle(color: Colors.white70, fontSize: 14)),
                               const SizedBox(height: 4),
                               Text(
-                                Globals.formatCurrency(widget.plan['current']),
+                                Globals.formatCurrency(widget.group['current']),
                                 style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -119,12 +156,45 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
     );
   }
 
+  Future<void> _loadExpenses() async {
+    try{
+      final expenses = await Api.getLatestExpenses(groupId);
+      setState(() {
+        this.expenses = expenses;
+        isLoading = false;
+      });
+    }catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+
+  }
+
+  Future<void> _loadNewExpenses() async {
+    try{
+      String lastTimestamp;
+
+      if (expenses.isEmpty) {lastTimestamp = groupCreateDate;}
+      else {lastTimestamp = expenses.first['createdAt'];}
+
+      final newExpenses = await Api.getExpensesAfter(groupId, lastTimestamp);
+
+      if (newExpenses.isNotEmpty) {
+        setState(() {
+          expenses = [...expenses, ...newExpenses];
+        });
+      }
+    }catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
+
   List<Widget> _buildExpenseListWithDates(List expenses) {
     List<Widget> widgets = [];
     DateTime? lastDate;
+    final formatter = DateFormat("dd MMM yyyy");
 
     for (final expense in expenses) {
-      final currentDate = DateTime(expense['dateTime'].year, expense['dateTime'].month, expense['dateTime'].day);
+      final currentDate = Globals.parseDateToLocal(expense["createdAt"]);
       final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day );
 
       if (lastDate == null || currentDate != lastDate) {
@@ -132,7 +202,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12.0), 
             child: Center(child: Text(
-              currentDate == today ? 'Today' : '${currentDate.day}/${currentDate.month}/${currentDate.year}',
+              currentDate.isAfter(today) ? 'Today' : formatter.format(currentDate),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Color(0xFF00A885)),
             ),
           ),),
@@ -148,7 +218,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
 
   Widget _buildExpenseItem(Map<String, dynamic> expense) {
-    DateTime dateTime = expense['dateTime'];
+    DateTime dateTime = Globals.parseDateToLocal(expense["createdAt"]);
     //String dateStr = '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     String timeStr = '${dateTime.hour}:${dateTime.minute}';
     
@@ -200,31 +270,28 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
     );
   }
 
-    List<Map<String, dynamic>> expenses = [
-      {'amount': 500.00, 'title': 'Initial deposit', 'dateTime': DateTime(2025,8,8,9,18)},
-      {'amount': 800.00, 'title': 'October savings', 'dateTime': DateTime.now()},
-      {'amount': 300.00, 'title': 'Bonus monney', 'dateTime': DateTime.now()},
-    ];
-
 
   void _addExpenseDialog() {
     final TextEditingController titleController = TextEditingController();
-    final TextEditingController amountController = TextEditingController();
     final TextEditingController descController= TextEditingController();
+    final amountController = NumberEditingTextController.currency(currencyName: 'MYR', allowNegative: false);
+    final formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Add to ${widget.plan['title']}'),
-          content: Column(
+          title: Text('Add to ${widget.group['title']}'),
+          content: Form(
+            key: formKey,
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('Title', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              TextField(
+              TextFormField(
                 controller: titleController,
                 decoration: InputDecoration(
                   hintText: 'New Expense',
@@ -234,16 +301,20 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                     borderSide: const BorderSide(color: Color(0xFF00D4AA)),
                   ),
                 ),
+                validator: (value){
+                  if(value == null || value.isEmpty){
+                    return "Expense title can't be empty";
+                  }
+                },
               ),
               const SizedBox(height:16),
               const Text('Amount', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              TextField(
+              TextFormField(
                 controller: amountController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  prefixText: 'RM ',
-                  hintText: '0.00',
+                  hintText: 'RM 0.00',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -254,7 +325,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
               const SizedBox(height: 16),
               const Text('Description (Optional)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              TextField(
+              TextFormField(
                 controller: descController,
                 decoration: InputDecoration(
                   hintText: 'Expense details',
@@ -288,6 +359,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
               ),
             ],
           ),
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -297,28 +369,25 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                double? amount = double.tryParse(amountController.text);
-                if (amount != null && amount > 0) {
-                  setState(() {
-                    // widget.plan['current'] += amount;
-                    // contributions.insert(0, {
-                    //   'amount': amount,
-                    //   'note': noteController.text.isEmpty ? 'Contribution' : noteController.text,
-                    //   'date': DateTime.now(),
-                    // });
+                if (formKey.currentState!.validate()) {
+                  final String body = jsonEncode({
+                    "groupId": groupId,
+                    "title": titleController.text.trim(),
+                    "amount": amountController.number?.toInt() ?? 0,
                   });
 
-                  Navigator.pop(context);
+                  try{
+                    Api.createExpense(body,groupId);
+                  }catch(e){
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                    );
+                  }
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Added ${Globals.formatCurrency(amount)} to ${widget.plan['title']}'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
+                  Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter a valid amount'), backgroundColor: Colors.red),
+                    const SnackBar(content: Text('Please enter a valid value'), backgroundColor: Colors.red),
                   );
                 }
               },
@@ -522,7 +591,5 @@ class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
 
   }
 
-  
-    
 }
 
