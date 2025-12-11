@@ -6,6 +6,7 @@ import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/screens/group_main_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class GroupsScreen extends StatefulWidget {
   const GroupsScreen({super.key});
@@ -16,18 +17,27 @@ class GroupsScreen extends StatefulWidget {
 
 class _GroupsScreenState extends State<GroupsScreen> {
 
-  final groupTemplate =     
-  {
-        "groupId": "e072baa7-b459-4b85-bd35-3aca65475a2d",
-        "name": "Personal Spending",
-        "personal": true,
-        "membership": {
-            "memberId": UserData().id,
-            "joinedAt": "2025-12-06T09:26:48.247927Z",
-            "isAdmin": true
-        }
-  };
+  // final List<Map<String,dynamic>> groupList = [    
+  //   {
+  //         "groupId": "e072baa7-b459-4b85-bd35-3aca65475a2d",
+  //         "name": "Personal Spending",
+  //         "personal": true,
+  //         "membership": {
+  //             "memberId": UserData().id,
+  //             "joinedAt": "2025-12-06T09:26:48.247927Z",
+  //             "isAdmin": true
+  //         },
+  //         "total": 314159
+  //   },
+  // ];
   
+  @override
+  void initState() {
+    super.initState();
+    UserData().updateGroupList();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,7 +67,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Personal Spending Section
-              const Text(
+              Text(
                 'Personal Spending',
                 style: TextStyle(
                   fontSize: 20,
@@ -73,7 +83,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                 ),
                 child: InkWell(
                   onTap:(){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => GroupMainScreen(group: groupTemplate)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => GroupMainScreen(groupIndex: 0)));
                   }, 
                   child: Column(
                     children: [
@@ -84,8 +94,8 @@ class _GroupsScreenState extends State<GroupsScreen> {
                             'Total Spent',
                             style: TextStyle(fontSize: 16, color: Colors.grey),
                           ),
-                          const Text(
-                            'RM 1,234.00',
+                          Text(
+                            Globals.formatCurrency(Provider.of<UserData>(context).groupList[0]["total"]/100),
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,

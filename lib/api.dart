@@ -72,4 +72,24 @@ class Api{
       rethrow;
     } 
   }
+
+  static Future<List<dynamic>> getUserGroups() async {
+    final url = Uri.parse("${Globals.baseUrl}/api/groups/user");
+
+    try {
+      final res = await http.get(
+        url,
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return data;
+      } else {
+        throw (res.body);
+      }
+    } catch (e) {
+      rethrow;
+    } 
+  }
 }

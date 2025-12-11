@@ -46,6 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
             if (token != null) {
               //load user
               await UserData().fromJson(data);
+              await UserData().updateGroupList();
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Login successful!")),

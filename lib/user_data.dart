@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:fyp_tallypath/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class UserData {
+class UserData extends ChangeNotifier {
   // Singleton Instance
   static final UserData _instance = UserData._internal();
   factory UserData() => _instance;
@@ -17,6 +18,8 @@ class UserData {
   String? mobile;
   String? dob;
 
+  List<dynamic> groupList = [];
+
   /// Initialize from SharedPreferences
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
@@ -25,6 +28,7 @@ class UserData {
 
     final userString = prefs.getString('user');
     if (userString != null) {
+      updateGroupList();
       try {
         final userJson = json.decode(userString);
         _applyUserJson(userJson);
@@ -131,5 +135,16 @@ class UserData {
 
   bool isLoggedIn(){
     return !(token==null||token=="");
+  }
+
+  Future<dynamic> updateGroupList({int groupIndex = 0}) async{
+    try{
+      var updatedList = await Api.getUserGroups();
+      groupList = updatedList;
+      notifyListeners();
+    }catch(e){
+      print('Error: $e');
+    }
+    return groupList[0];
   }
 }

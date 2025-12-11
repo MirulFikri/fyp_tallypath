@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'screens/splash_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
 
@@ -12,7 +13,7 @@ void main() async{
   );
   WidgetsFlutterBinding.ensureInitialized();
   await UserData().init();
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(create: (context) => UserData(), child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {

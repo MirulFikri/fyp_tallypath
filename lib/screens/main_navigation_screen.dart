@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fyp_tallypath/user_data.dart';
 import 'main_home_screen.dart';
 import 'groups_screen.dart';
 import 'savings_screen.dart';
@@ -31,7 +32,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   void initState(){
     super.initState();
-
+    UserData().updateGroupList();
   }
 
   @override

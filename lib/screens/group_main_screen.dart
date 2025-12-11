@@ -4,13 +4,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
+import 'package:fyp_tallypath/user_data.dart';
 import 'package:intl/intl.dart';
 import 'package:number_editing_controller/number_editing_controller.dart';
+import 'package:provider/provider.dart';
 
 class GroupMainScreen extends StatefulWidget {
-  final Map<String, dynamic> group;
+  final int groupIndex;
 
-  const GroupMainScreen({super.key, required this.group});
+  const GroupMainScreen({super.key, required this.groupIndex});
 
   @override
   State<GroupMainScreen> createState() => _GroupMainScreenState();
@@ -18,14 +20,7 @@ class GroupMainScreen extends StatefulWidget {
 
 class _GroupMainScreenState extends State<GroupMainScreen> {
 
-  List<dynamic> expenses = [
-    // {'amount': 500.00, 'title': 'Initial deposit', 'createdAt': "2025-12-08T16:53:45.0280187Z"},
-    // {'amount': 800.00, 'title': 'October savings', 'createdAt': DateTime.now().toString()},
-    // {'amount': 300.00, 'title': 'Bonus monney', 'createdAt': DateTime.now().toString()},
-    // {'amount': 800.00, 'title': 'October savings', 'createdAt': DateTime.now().toString()},
-    // {'amount': 300.00, 'title': 'Bonus monney', 'createdAt': DateTime.now().toString()},
-
-  ];
+  List<dynamic> expenses = [];
   bool isLoading = true;
 
   @override
@@ -60,7 +55,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         centerTitle: false,
         automaticallyImplyLeading: false,
         title: Text(
-          widget.group['name'],
+          UserData().groupList[widget.groupIndex]['name'],
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -109,7 +104,8 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                               const Text('Total Spending', style: TextStyle(color: Colors.white70, fontSize: 14)),
                               const SizedBox(height: 4),
                               Text(
-                                Globals.formatCurrency(1234),//TODO: set to total
+                                Globals.formatCurrency(
+                                Provider.of<UserData>(context).groupList[widget.groupIndex]["total"]/100),
                                 style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -156,9 +152,10 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
   Future<void> _loadExpenses() async {
     try{
-      final expenses = await Api.getLatestExpenses(widget.group["groupId"]);
+      final expenses = await Api.getLatestExpenses(UserData().groupList[widget.groupIndex]["groupId"]);
       setState(() {
         this.expenses = expenses;
+        UserData().updateGroupList();
         isLoading = false;
       });
     }catch(e){
@@ -169,15 +166,16 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
   Future<void> _loadNewExpenses() async {
     try{
-      String lastTimestamp = widget.group["membership"]["joinedAt"] ;
+      String lastTimestamp = UserData().groupList[widget.groupIndex]["membership"]["joinedAt"] ;
 
       if (expenses.isNotEmpty){lastTimestamp = expenses.last['createdAt'];}
 
-      final newExpenses = await Api.getExpensesAfter(widget.group["groupId"], lastTimestamp);
+      final newExpenses = await Api.getExpensesAfter(UserData().groupList[widget.groupIndex]["groupId"], lastTimestamp);
 
       if (newExpenses.isNotEmpty) {
         setState(() {
           expenses = [...expenses, ...newExpenses];
+          UserData().updateGroupList();
         });
       }
     }catch(e){
@@ -215,9 +213,9 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
 
   Widget _buildExpenseItem(Map<String, dynamic> expense) {
+    final formatter = DateFormat("HH:mm");
     DateTime dateTime = Globals.parseDateToLocal(expense["createdAt"]);
-    //String dateStr = '${dateTime.day}/${dateTime.month}/${dateTime.year}';
-    String timeStr = '${dateTime.hour}:${dateTime.minute}';
+    String timeStr = formatter.format(dateTime);
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -254,7 +252,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  Globals.formatCurrency(expense['amount']),
+                  Globals.formatCurrency(expense['amount']/100),
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF00D4AA)),
                 ),
               ],
@@ -279,7 +277,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Add to ${widget.group['title']}'),
+          title: Text('Add to ${UserData().groupList[widget.groupIndex]['name']}'),
           content: Form(
             key: formKey,
             child: Column(
@@ -318,6 +316,9 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                     borderSide: const BorderSide(color: Color(0xFF00D4AA)),
                   ),
                 ),
+                validator: (value){
+                  if(value==null){return 'Amount can\'t be empty';}
+                },
               ),
               const SizedBox(height: 16),
               const Text('Description (Optional)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
@@ -365,16 +366,19 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (formKey.currentState!.validate()) {
+                  var num = amountController.number ?? 0;
+                  var amt = (num * 100).toInt();
                   final String body = jsonEncode({
-                    "groupId": widget.group["groupId"],
+                    "groupId": UserData().groupList[widget.groupIndex]["groupId"],
                     "title": titleController.text.trim(),
-                    "amount": amountController.number?.toInt() ?? 0,
+                    "amount": amt,
                   });
 
                   try{
-                    Api.createExpense(body,widget.group["groupId"]);
+                    await Api.createExpense(body,UserData().groupList[widget.groupIndex]["groupId"]);
+                    _loadNewExpenses();
                   }catch(e){
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),

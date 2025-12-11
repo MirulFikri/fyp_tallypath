@@ -57,6 +57,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           final token = data["token"];
           if (token != null) {
             await UserData().fromJson(data);
+            await UserData().updateGroupList();
             if (mounted) {
               Navigator.pushReplacement(
                 context,
