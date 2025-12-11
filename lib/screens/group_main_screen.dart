@@ -18,8 +18,6 @@ class GroupMainScreen extends StatefulWidget {
 
 class _GroupMainScreenState extends State<GroupMainScreen> {
 
-  final String groupId = "5a12d9bd-f925-4fd5-8efe-b78789edd478";
-  final String groupCreateDate = "2025-12-08T15:53:45.0280187Z";
   List<dynamic> expenses = [
     // {'amount': 500.00, 'title': 'Initial deposit', 'createdAt': "2025-12-08T16:53:45.0280187Z"},
     // {'amount': 800.00, 'title': 'October savings', 'createdAt': DateTime.now().toString()},
@@ -62,7 +60,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         centerTitle: false,
         automaticallyImplyLeading: false,
         title: Text(
-          widget.group['title'],
+          widget.group['name'],
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -111,7 +109,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                               const Text('Total Spending', style: TextStyle(color: Colors.white70, fontSize: 14)),
                               const SizedBox(height: 4),
                               Text(
-                                Globals.formatCurrency(widget.group['current']),
+                                Globals.formatCurrency(1234),//TODO: set to total
                                 style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -158,7 +156,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
   Future<void> _loadExpenses() async {
     try{
-      final expenses = await Api.getLatestExpenses(groupId);
+      final expenses = await Api.getLatestExpenses(widget.group["groupId"]);
       setState(() {
         this.expenses = expenses;
         isLoading = false;
@@ -171,12 +169,11 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
   Future<void> _loadNewExpenses() async {
     try{
-      String lastTimestamp;
+      String lastTimestamp = widget.group["membership"]["joinedAt"] ;
 
-      if (expenses.isEmpty) {lastTimestamp = groupCreateDate;}
-      else {lastTimestamp = expenses.first['createdAt'];}
+      if (expenses.isNotEmpty){lastTimestamp = expenses.last['createdAt'];}
 
-      final newExpenses = await Api.getExpensesAfter(groupId, lastTimestamp);
+      final newExpenses = await Api.getExpensesAfter(widget.group["groupId"], lastTimestamp);
 
       if (newExpenses.isNotEmpty) {
         setState(() {
@@ -190,19 +187,19 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
   List<Widget> _buildExpenseListWithDates(List expenses) {
     List<Widget> widgets = [];
-    DateTime? lastDate;
+    String? lastDate;
     final formatter = DateFormat("dd MMM yyyy");
 
     for (final expense in expenses) {
-      final currentDate = Globals.parseDateToLocal(expense["createdAt"]);
-      final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day );
+      final currentDate = formatter.format(Globals.parseDateToLocal(expense["createdAt"]));
+      final today = formatter.format(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day ));
 
       if (lastDate == null || currentDate != lastDate) {
         widgets.add(
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12.0), 
             child: Center(child: Text(
-              currentDate.isAfter(today) ? 'Today' : formatter.format(currentDate),
+              currentDate == today ? 'Today' : currentDate,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Color(0xFF00A885)),
             ),
           ),),
@@ -371,13 +368,13 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
               onPressed: () {
                 if (formKey.currentState!.validate()) {
                   final String body = jsonEncode({
-                    "groupId": groupId,
+                    "groupId": widget.group["groupId"],
                     "title": titleController.text.trim(),
                     "amount": amountController.number?.toInt() ?? 0,
                   });
 
                   try{
-                    Api.createExpense(body,groupId);
+                    Api.createExpense(body,widget.group["groupId"]);
                   }catch(e){
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),

@@ -16,12 +16,16 @@ class GroupsScreen extends StatefulWidget {
 
 class _GroupsScreenState extends State<GroupsScreen> {
 
-  final plan = {
-    'title': 'Personal Spending',
-    'target': 5000.00,
-    'current': 1500.00,
-    'deadline': DateTime(2027, 6, 30),
-    'icon': Icons.trending_up,
+  final groupTemplate =     
+  {
+        "groupId": "e072baa7-b459-4b85-bd35-3aca65475a2d",
+        "name": "Personal Spending",
+        "personal": true,
+        "membership": {
+            "memberId": UserData().id,
+            "joinedAt": "2025-12-06T09:26:48.247927Z",
+            "isAdmin": true
+        }
   };
   
   @override
@@ -69,7 +73,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                 ),
                 child: InkWell(
                   onTap:(){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => GroupMainScreen(group: plan)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => GroupMainScreen(group: groupTemplate)));
                   }, 
                   child: Column(
                     children: [
