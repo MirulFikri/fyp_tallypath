@@ -297,9 +297,8 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                   ),
                 ),
                 validator: (value){
-                  if(value == null || value.isEmpty){
-                    return "Expense title can't be empty";
-                  }
+                    if (value == null || value.isEmpty) {return "Expense title can't be empty";}
+                    return null;
                 },
               ),
               const SizedBox(height:16),
@@ -318,6 +317,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                 ),
                 validator: (value){
                   if(value==null){return 'Amount can\'t be empty';}
+                  return null;
                 },
               ),
               const SizedBox(height: 16),
