@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'savings_detail_screen.dart';
+import 'create_goal_screen.dart';
 
 class SavingsScreen extends StatefulWidget {
   const SavingsScreen({super.key});
@@ -215,7 +216,14 @@ class _SavingsScreenState extends State<SavingsScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CreateGoalScreen(),
+            ),
+          );
+        },
         backgroundColor: const Color(0xFF00D4AA),
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
