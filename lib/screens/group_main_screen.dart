@@ -168,13 +168,13 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
     try{
       String lastTimestamp = UserData().groupList[widget.groupIndex]["membership"]["joinedAt"] ;
 
-      if (expenses.isNotEmpty){lastTimestamp = expenses.last['createdAt'];}
+      if (expenses.isNotEmpty){lastTimestamp = expenses.first['createdAt'];}
 
       final newExpenses = await Api.getExpensesAfter(UserData().groupList[widget.groupIndex]["groupId"], lastTimestamp);
 
       if (newExpenses.isNotEmpty) {
         setState(() {
-          expenses = [...expenses, ...newExpenses];
+          expenses = [...newExpenses, ...expenses];
           UserData().updateGroupList();
         });
       }
@@ -188,7 +188,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
     String? lastDate;
     final formatter = DateFormat("dd MMM yyyy");
 
-    for (final expense in expenses) {
+    for (final expense in expenses.reversed.toList()) {
       final currentDate = formatter.format(Globals.parseDateToLocal(expense["createdAt"]));
       final today = formatter.format(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day ));
 
