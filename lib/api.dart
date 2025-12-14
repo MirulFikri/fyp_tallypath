@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:http/http.dart' as http;
@@ -52,7 +53,7 @@ class Api{
     } 
   }
 
-  static Future<String> createExpense(String body, String groupId) async {
+  static Future<void> createExpense(String body, String groupId) async {
     final url = Uri.parse("${Globals.baseUrl}/api/expenses/");
 
     try {
@@ -63,8 +64,7 @@ class Api{
       );
 
       if (res.statusCode == 200) {
-        final data = jsonEncode(res.body);
-        return data;
+        return;
       } else {
         throw (res.body);
       }
@@ -76,6 +76,25 @@ class Api{
   static Future<List<dynamic>> getUserGroups() async {
     final url = Uri.parse("${Globals.baseUrl}/api/groups/user");
 
+    try {
+      final res = await http.get(
+        url,
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return data;
+      } else {
+        throw (res.body);
+      }
+    } catch (e) {
+      rethrow;
+    } 
+  }
+
+  static Future<List<dynamic>> getGroupBalance(String groupId) async {
+    final url = Uri.parse("${Globals.baseUrl}/api/expenses/balance/$groupId");
     try {
       final res = await http.get(
         url,

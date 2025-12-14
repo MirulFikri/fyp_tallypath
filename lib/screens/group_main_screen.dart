@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
@@ -22,6 +21,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
   List<dynamic> expenses = [];
   bool isLoading = true;
+  var groupBalance = [];
 
   @override
   void initState(){
@@ -171,6 +171,8 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
       if (expenses.isNotEmpty){lastTimestamp = expenses.first['createdAt'];}
 
       final newExpenses = await Api.getExpensesAfter(UserData().groupList[widget.groupIndex]["groupId"], lastTimestamp);
+      var gb = await Api.getGroupBalance(UserData().groupList[widget.groupIndex]['groupId']);
+      setState(() {groupBalance = gb;});
 
       if (newExpenses.isNotEmpty) {
         setState(() {
