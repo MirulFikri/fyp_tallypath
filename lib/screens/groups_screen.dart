@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/screens/group_main_screen.dart';
+import 'package:fyp_tallypath/screens/personal_spending_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -83,7 +84,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                 ),
                 child: InkWell(
                   onTap:(){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => GroupMainScreen(groupIndex: 0)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => PersonalSpendingScreen(groupIndex: 0)));
                   }, 
                   child: Column(
                     children: [

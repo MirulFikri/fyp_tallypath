@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:http/http.dart' as http;
