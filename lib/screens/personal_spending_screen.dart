@@ -9,16 +9,15 @@ import 'package:number_editing_controller/number_editing_controller.dart';
 import 'package:provider/provider.dart';
 
 class PersonalSpendingScreen extends StatefulWidget {
-  final int groupIndex;
 
-  const PersonalSpendingScreen({super.key, required this.groupIndex});
+  const PersonalSpendingScreen({super.key});
 
   @override
   State<PersonalSpendingScreen> createState() => _PersonalSpendingScreenState();
 }
 
 class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
-
+  final int groupIndex = 0;
   List<dynamic> expenses = [];
   bool isLoading = true;
 
@@ -54,7 +53,7 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
         centerTitle: false,
         automaticallyImplyLeading: false,
         title: Text(
-          UserData().groupList[widget.groupIndex]['name'],
+          UserData().groupList[groupIndex]['name'],
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -104,7 +103,7 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 Globals.formatCurrency(
-                                Provider.of<UserData>(context).groupList[widget.groupIndex]["total"]/100),
+                                Provider.of<UserData>(context).groupList[groupIndex]["total"]/100),
                                 style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -139,7 +138,7 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
 
   Future<void> _loadExpenses() async {
     try{
-      final expenses = await Api.getLatestExpenses(UserData().groupList[widget.groupIndex]["groupId"]);
+      final expenses = await Api.getLatestExpenses(UserData().groupList[groupIndex]["groupId"]);
       setState(() {
         this.expenses = expenses;
         UserData().updateGroupList();
@@ -153,11 +152,11 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
 
   Future<void> _loadNewExpenses() async {
     try{
-      String lastTimestamp = UserData().groupList[widget.groupIndex]["membership"]["joinedAt"] ;
+      String lastTimestamp = UserData().groupList[groupIndex]["membership"]["joinedAt"] ;
 
       if (expenses.isNotEmpty){lastTimestamp = expenses.first['createdAt'];}
 
-      final newExpenses = await Api.getExpensesAfter(UserData().groupList[widget.groupIndex]["groupId"], lastTimestamp);
+      final newExpenses = await Api.getExpensesAfter(UserData().groupList[groupIndex]["groupId"], lastTimestamp);
 
       if (newExpenses.isNotEmpty) {
         setState(() {
@@ -264,7 +263,7 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Add to ${UserData().groupList[widget.groupIndex]['name']}'),
+          title: Text('Add to ${UserData().groupList[groupIndex]['name']}'),
           content: Form(
             key: formKey,
             child: Column(
@@ -358,13 +357,13 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
                   var num = amountController.number ?? 0;
                   var amt = (num * 100).toInt();
                   final String body = jsonEncode({
-                    "groupId": UserData().groupList[widget.groupIndex]["groupId"],
+                    "groupId": UserData().groupList[groupIndex]["groupId"],
                     "title": titleController.text.trim(),
                     "amount": amt,
                   });
 
                   try{
-                    await Api.createExpense(body,UserData().groupList[widget.groupIndex]["groupId"]);
+                    await Api.createExpense(body,UserData().groupList[groupIndex]["groupId"]);
                     _loadNewExpenses();
                   }catch(e){
                     ScaffoldMessenger.of(context).showSnackBar(

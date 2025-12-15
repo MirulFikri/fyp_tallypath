@@ -84,7 +84,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                 ),
                 child: InkWell(
                   onTap:(){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => PersonalSpendingScreen(groupIndex: 0)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => PersonalSpendingScreen()));
                   }, 
                   child: Column(
                     children: [
@@ -108,21 +108,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                       const SizedBox(height: 12),
                       const Divider(),
                       const SizedBox(height: 12),
-                      _buildPersonalItem(
-                        'Groceries',
-                        'RM 450.00',
-                        Icons.shopping_cart,
-                      ),
-                      _buildPersonalItem(
-                        'Transport',
-                        'RM 234.00',
-                        Icons.directions_car,
-                      ),
-                      _buildPersonalItem(
-                        'Entertainment',
-                        'RM 550.00',
-                        Icons.movie,
-                      ),
+                      
                     ],
                   )
                 ),
@@ -185,27 +171,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
               ),
               const SizedBox(height: 16),
               
-              _buildGroupCard(
-                'Weekend Trip',
-                '4 members',
-                'RM 850.00',
-                'You owe RM 212.50',
-                Icons.landscape,
-              ),
-              _buildGroupCard(
-                'House Rent',
-                '3 members',
-                'RM 1,500.00',
-                'Settled',
-                Icons.home,
-              ),
-              _buildGroupCard(
-                'Study Group',
-                '5 members',
-                'RM 320.00',
-                'You are owed RM 64.00',
-                Icons.school,
-              ),
+              Column(children: _buildGroupCardList()),
             ],
           ),
         ),
@@ -218,37 +184,28 @@ class _GroupsScreenState extends State<GroupsScreen> {
     );
   }
 
-  Widget _buildPersonalItem(String title, String amount, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF00D4AA), size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
-          Text(
-            amount,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
+  List<Widget> _buildGroupCardList() {
+    List<Widget> widgets = [];
+    int index = 0;
+    for (final group in Provider.of<UserData>(context).groupList) {
+      if (index == 0) {
+        index++;
+        continue;
+      }
+      widgets.add(_buildGroupCard(group['name'],"0",group['total'],"Settled", Icons.group, index));
+      index++;
+    }
+
+    return widgets;
   }
 
   Widget _buildGroupCard(
     String title,
     String members,
-    String totalAmount,
+    int totalAmount,
     String status,
     IconData icon,
+    [int index = 0]
   ) {
     final bool isSettled = status == 'Settled';
     final bool isOwed = status.contains('owed');
@@ -262,7 +219,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
       ),
       child: InkWell(
         onTap:(){
-          print('tapped $title');
+          Navigator.push(context, MaterialPageRoute(builder: (context) => GroupMainScreen(groupIndex : index)));
         },
         child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,7 +276,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                     ),
                   ),
                   Text(
-                    totalAmount,
+                    Globals.formatCurrency(totalAmount/100),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -500,6 +457,9 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
           final data = jsonDecode(res.body);
           if (data != null) {
             if (mounted) {
+            setState(() {
+              UserData().updateGroupList();
+            });
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Successfully created group!")));
               Navigator.pop(context);
               showDialog(
@@ -692,6 +652,7 @@ class _JoinGroupDialogState extends State<JoinGroupDialog> {
           if (data != null) {
             debugPrint("response : ${data.toString()}");
             if (mounted) {
+              setState((){UserData().updateGroupList();});
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Successfully joined group!")));
               Navigator.pop(context);
               showDialog(
