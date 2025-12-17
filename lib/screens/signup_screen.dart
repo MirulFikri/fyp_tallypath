@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/user_data.dart';
+import 'package:http/http.dart' as http;
 import 'login_screen.dart';
 import 'main_navigation_screen.dart';
-import 'package:http/http.dart' as http;
+import 'package:fyp_tallypath/auth_service.dart';
 import 'dart:convert';
 
 class SignUpScreen extends StatefulWidget {
@@ -56,6 +57,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           final data = jsonDecode(res.body);
           final token = data["token"];
           if (token != null) {
+            AuthService().setToken(token, getExpiryFromJwt(token));
             await UserData().fromJson(data);
             await UserData().updateGroupList();
             if (mounted) {

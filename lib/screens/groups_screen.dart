@@ -6,7 +6,7 @@ import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/screens/group_main_screen.dart';
 import 'package:fyp_tallypath/screens/personal_spending_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
-import 'package:http/http.dart' as http;
+import 'package:fyp_tallypath/auth_service.dart';
 import 'package:provider/provider.dart';
 
 class GroupsScreen extends StatefulWidget {
@@ -192,7 +192,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
         index++;
         continue;
       }
-      widgets.add(_buildGroupCard(group['name'],"0",group['total'],"Settled", Icons.group, index));
+      widgets.add(_buildGroupCard(group['name'],"${group['members'].length} members",group['total'],"Settled", Icons.group, index));
       index++;
     }
 
@@ -444,7 +444,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       "memberIds": ["${UserData().id}"]
     });
     try {
-      final res = await http.post(
+      final res = await authClient.post(
         url,
         headers: <String, String>{
           "Content-Type": "application/json",
@@ -639,7 +639,7 @@ class _JoinGroupDialogState extends State<JoinGroupDialog> {
     setState(() => _isLoading = true);
     final url = Uri.parse("${Globals.baseUrl}/api/groups/join/${_inviteCodeController.text.trim()}");
     try {
-      final res = await http.post(
+      final res = await authClient.post(
         url,
         headers: <String, String>{
           "Content-Type": "application/json",

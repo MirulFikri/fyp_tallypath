@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/user_data.dart';
-import 'package:http/http.dart' as http;
+import 'package:fyp_tallypath/auth_service.dart';
 
 class Api{
   static Future<List<dynamic>> getLatestExpenses(String groupId, {int limit = 50}) async {
     final url = Uri.parse("${Globals.baseUrl}/api/expenses/group/$groupId?before=${Globals.parseDateToUtc(DateTime.now())}&limit=$limit");
 
     try {
-      final res = await http.get(
+      final res = await authClient.get(
         url,
         headers: {
           "Content-Type": "application/json",
@@ -32,7 +32,7 @@ class Api{
     final url = Uri.parse("${Globals.baseUrl}/api/expenses/after/group/$groupId?after=$after");
 
     try {
-      final res = await http.get(
+      final res = await authClient.get(
         url,
         headers: {
           "Content-Type": "application/json",
@@ -55,7 +55,7 @@ class Api{
     final url = Uri.parse("${Globals.baseUrl}/api/expenses/");
 
     try {
-      final res = await http.post(
+      final res = await authClient.post(
         url,
         headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
         body: body,
@@ -75,7 +75,7 @@ class Api{
     final url = Uri.parse("${Globals.baseUrl}/api/groups/user");
 
     try {
-      final res = await http.get(
+      final res = await authClient.get(
         url,
         headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
       );
@@ -94,7 +94,7 @@ class Api{
   static Future<List<dynamic>> getGroupBalance(String groupId) async {
     final url = Uri.parse("${Globals.baseUrl}/api/expenses/balance/$groupId");
     try {
-      final res = await http.get(
+      final res = await authClient.get(
         url,
         headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
       );
@@ -109,4 +109,6 @@ class Api{
       rethrow;
     } 
   }
+
+
 }

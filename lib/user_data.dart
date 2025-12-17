@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:fyp_tallypath/api.dart';
+import 'package:fyp_tallypath/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserData extends ChangeNotifier {
@@ -25,6 +26,7 @@ class UserData extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
 
     token = prefs.getString('token');
+    if(token!= null) AuthService().setToken(token!, getExpiryFromJwt(token!));
 
     final userString = prefs.getString('user');
     if (userString != null) {

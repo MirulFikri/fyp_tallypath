@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/auth_service.dart';
 import 'welcome_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
 
@@ -12,7 +13,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
 
   static Future<void> _logout(BuildContext context) async {
-    await UserData().clear();
+    await AuthService().logout();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const WelcomeScreen()),

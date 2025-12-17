@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fyp_tallypath/auth_service.dart';
+import 'package:fyp_tallypath/globals.dart';
 import 'package:provider/provider.dart';
 import 'screens/splash_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
@@ -13,7 +15,15 @@ void main() async{
   );
   WidgetsFlutterBinding.ensureInitialized();
   await UserData().init();
-  runApp(ChangeNotifierProvider(create: (context) => UserData(), child: const MyApp()));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => UserData()),
+        ChangeNotifierProvider(create: (context) => AuthService()),
+      ],
+      child:const MyApp()));
+
+  //runApp(, child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -22,6 +32,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'TallyPath',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

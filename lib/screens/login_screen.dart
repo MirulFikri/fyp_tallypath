@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fyp_tallypath/globals.dart';
+import 'package:http/http.dart' as http;
 import 'signup_screen.dart';
 import 'main_navigation_screen.dart';
-import 'package:http/http.dart' as http;
+import 'package:fyp_tallypath/auth_service.dart';
 import 'dart:convert';
 import 'package:fyp_tallypath/user_data.dart';
 
@@ -45,6 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
             final token = data["token"];
             if (token != null) {
               //load user
+              AuthService().setToken(token, getExpiryFromJwt(token));
               await UserData().fromJson(data);
               await UserData().updateGroupList();
               if (mounted) {
@@ -63,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
         }
       } catch (e) {
+        rethrow;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("Network error: $e")));
