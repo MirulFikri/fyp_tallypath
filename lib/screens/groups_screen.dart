@@ -17,20 +17,6 @@ class GroupsScreen extends StatefulWidget {
 }
 
 class _GroupsScreenState extends State<GroupsScreen> {
-
-  // final List<Map<String,dynamic>> groupList = [    
-  //   {
-  //         "groupId": "e072baa7-b459-4b85-bd35-3aca65475a2d",
-  //         "name": "Personal Spending",
-  //         "personal": true,
-  //         "membership": {
-  //             "memberId": UserData().id,
-  //             "joinedAt": "2025-12-06T09:26:48.247927Z",
-  //             "isAdmin": true
-  //         },
-  //         "total": 314159
-  //   },
-  // ];
   
   @override
   void initState() {
