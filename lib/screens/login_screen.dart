@@ -60,12 +60,12 @@ class _LoginScreenState extends State<LoginScreen> {
               }
             }
         } else {
+          print(res.statusCode);
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
         }
       } catch (e) {
-        rethrow;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("Network error: $e")));

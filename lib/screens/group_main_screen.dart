@@ -115,18 +115,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                       ),
                     ],
                   ),
-
-                  SizedBox(height: 36),
-                  SegmentedProgressBar(
-                    segments: [
-                      Segment(label: 'Foodd', value: 40, color: const Color.fromARGB(255, 156, 255, 159)),
-                      Segment(label: 'Rent', value: 30, color: const Color.fromARGB(255, 130, 199, 255)),
-                      Segment(label: 'Transport', value: 20, color: const Color.fromARGB(255, 249, 201, 129)),
-                      Segment(label: 'Other', value: 10, color: const Color.fromARGB(255, 235, 235, 235)),
-                    ],
-                    borderRadius: 4,
-                    height: 12,
-                  ),
+                  Text(groupBalance.toString()),
                   //const SizedBox(height:20),
                 ],
               ),
@@ -487,10 +476,12 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
   final amountController = NumberEditingTextController.currency(currencyName: 'MYR', allowNegative: false);
   final formKey = GlobalKey<FormState>();
   final sliderController = SliderController(0);
-  final splitController = NumberEditingTextController.currency(currencyName: 'MYR', allowNegative: false);
+  final splitController = NumberEditingTextController.currency(value:0, currencyName: 'MYR', allowNegative: false);
   final sliderControllers = [];
   final splitControllers = [];
   int amt = 0;
+  String? selectedName;
+  List<String> names = [];
 
   @override
   void initState() {
@@ -502,6 +493,8 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
       final amount = sliderController.value;
       splitController.number = amount / 100;
     });
+    names.add(UserData().id.toString());
+    widget.members.forEach((member){names.add(member['userId'].toString());});
     super.initState();
   }
 
@@ -510,7 +503,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
 
     for (int index = 0; index < widget.members.length; index++) {
       sliderControllers.add(SliderController(0));
-      splitControllers.add(NumberEditingTextController.currency(currencyName: 'MYR', allowNegative: false));
+      splitControllers.add(NumberEditingTextController.currency(value:0, currencyName: 'MYR', allowNegative: false));
       amountController.addListener(() {
         final amount = ((amountController.number ?? 0) * 100).toDouble();
         sliderControllers[index].value = sliderControllers[index].value.clamp(0, amount);
@@ -527,13 +520,15 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
           //Divider(thickness: 1,),
           Row(
             children: [
-              Text("${widget.members[index]['userId'].substring(0, 5)}:"),
+              Text("${widget.members[index]['nameInGroup']}:"),
               Expanded(
                 child: SliderFormField(
                   max: amt.toDouble(),
                   divisions: 200,
                   controller: sliderControllers[index],
-                  validator: (v) => v == 0 ? 'Required' : null,
+                  validator: (v){
+                    return null;
+                  },
                 ),
               ),
             ],
@@ -564,9 +559,6 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                   ),
                 ),
                 validator: (value) {
-                  if (value == null) {
-                    return 'Amount can\'t be empty';
-                  }
                   return null;
                 },
               ),
@@ -640,6 +632,34 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               ),
               SizedBox(height: 16),
               Divider(thickness: 1),
+              const Text('Paid By', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),              
+              DropdownButtonFormField<String>(
+                initialValue: selectedName,
+                decoration: const InputDecoration(
+                  labelText: 'Select person',
+                  border: OutlineInputBorder(),
+                ),
+                items: names.map((name) {
+                  return DropdownMenuItem<String>(
+                    value: name,
+                    child: name == UserData().id ? Text("You") : Text(widget.members.firstWhere((m)=>m["userId"]==name)["nameInGroup"]),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedName = value;
+                  });
+                },
+                validator: (value) {
+                  if (value == null) {
+                    return 'Please select a name';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              Divider(thickness: 1),
               const SizedBox(height: 8),
               const Text('Cost Split', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               Row(
@@ -650,7 +670,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                       max: amt.toDouble(),
                       divisions: 200,
                       controller: sliderController,
-                      validator: (v) => v == 0 ? 'Required' : null,
+                      validator: (v){return null;},
                     ),
                   ),
                 ],
@@ -742,14 +762,29 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () async {
+          onPressed: () async{
+            FocusScope.of(context).unfocus();
+            await Future<void>.delayed(Duration.zero);
             if (formKey.currentState!.validate()) {
               var num = amountController.number ?? 0;
               var amt = (num * 100).toInt();
+              var amts = [];
+              var n = splitController.number ?? 0;
+              amts.add((n*100).toInt());
+              splitControllers.forEach((sc){
+                var n = sc.number ?? 0;
+                amts.add((n*100).toInt());
+              });
+              var splits = [{"userId": UserData().id, "share": amts[0]}];
+              for(var i = 0; i < widget.members.length; i++){
+                splits.add({"userId":widget.members[i]["userId"], "share":amts[i+1]});
+              }
               final String body = jsonEncode({
                 "groupId": UserData().groupList[widget.groupIndex]["groupId"],
                 "title": titleController.text.trim(),
                 "amount": amt,
+                "paidBy": selectedName,
+                "splits":splits
               });
 
               try {
