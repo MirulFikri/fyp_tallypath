@@ -121,7 +121,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   void _signUp() {
-    //print('${_emailController.text}\n${_nameController.text}\n${_mobileController.text}\n${_usernameController.text}\n${_dobController.text}');
     if (_formKey.currentState!.validate()) {
       _authenticate();
     }

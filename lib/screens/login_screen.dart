@@ -60,7 +60,6 @@ class _LoginScreenState extends State<LoginScreen> {
               }
             }
         } else {
-          print(res.statusCode);
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));

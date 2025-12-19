@@ -116,6 +116,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                     ],
                   ),
                   Text(groupBalance.toString()),
+                  Wrap(children:balanceList(groupBalance)),
                   //const SizedBox(height:20),
                 ],
               ),
@@ -209,6 +210,82 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
     return widgets;
   }
+
+List<Widget> balanceList(List<dynamic> balance){
+  List<Widget> w = [];
+  var isSettled = true;
+
+  balance.forEach((b){
+    if(b["debtor"] == UserData().id){
+      isSettled = false;
+      w.add(Container(
+        margin: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 255, 232, 198),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          "You Owe ${UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b['creditor'])} ${b['amount']}",
+          style: TextStyle(
+            color: Colors.orange,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
+      ));
+
+    }else if(b["creditor"] == UserData().id){
+      isSettled = false;
+      w.add(Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: Color.fromARGB(255, 171, 255, 238),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          "${UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b['debtor'])} Owes You ${b['amount']}",
+          style: TextStyle(
+          color: Color(0xFF00D4AA),
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
+      ));
+    }
+  });
+
+  if(isSettled){
+      w.add(Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 189, 255, 191),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          "Settled",
+          style: TextStyle(
+          color: Colors.green,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
+        ),
+      ));
+    }
+
+  return w;
+}
+
+
 
   Widget _buildExpenseItem(Map<String, dynamic> expense) {
     final formatter = DateFormat("HH:mm");

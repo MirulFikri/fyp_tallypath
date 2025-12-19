@@ -178,7 +178,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
         index++;
         continue;
       }
-      widgets.add(_buildGroupCard(group['name'],"${group['members'].length} members",group['total'],"Settled", Icons.group, index));
+      widgets.add(_buildGroupCard(group['name'],"${group['members'].length} members",group['total'],[], Icons.group, index));
       index++;
     }
 
@@ -189,7 +189,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
     String title,
     String members,
     int totalAmount,
-    String status,
+    List<Widget> status,
     IconData icon,
     [int index = 0]
   ) {
@@ -270,32 +270,6 @@ class _GroupsScreenState extends State<GroupsScreen> {
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isSettled
-                      ? Colors.green.withOpacity(0.1)
-                      : isOwed
-                          ? const Color(0xFF00D4AA).withOpacity(0.1)
-                          : Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  status,
-                  style: TextStyle(
-                    color: isSettled
-                        ? Colors.green
-                        : isOwed
-                            ? const Color(0xFF00D4AA)
-                            : Colors.orange,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
             ],
           ),
         ],
@@ -304,9 +278,6 @@ class _GroupsScreenState extends State<GroupsScreen> {
     );
   }
 }
-
-
-
 
 class CreateGroupDialog extends StatefulWidget {
   const CreateGroupDialog({super.key});

@@ -149,4 +149,12 @@ class UserData extends ChangeNotifier {
     }
     return groupList[0];
   }
+
+  String getNameInGroup({int? groupIndex, String? userId}){
+    if(groupIndex!=null && userId !=null){
+      var m = groupList[groupIndex]["members"].firstWhere((m)=>m["userId"]==userId);
+      return m["nameInGroup"];
+    }
+    return "";
+  }
 }
