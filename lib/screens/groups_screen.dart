@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/screens/group_main_screen.dart';
 import 'package:fyp_tallypath/screens/personal_spending_screen.dart';
@@ -17,11 +18,64 @@ class GroupsScreen extends StatefulWidget {
 }
 
 class _GroupsScreenState extends State<GroupsScreen> {
-  
   @override
   void initState() {
-    super.initState();
     UserData().updateGroupList();
+    super.initState();
+  }
+List<Widget> balanceList(List<dynamic> balance, int groupIndex) {
+    List<Widget> w = [];
+    var isSettled = true;
+
+    balance.forEach((b) {
+      if (b["debtor"] == UserData().id) {
+        isSettled = false;
+        w.add(
+          Container(
+            margin: const EdgeInsets.all(10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 255, 232, 198),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              "You Owe ${UserData().getNameInGroup(groupIndex: groupIndex, userId: b['creditor'])} ${b['amount']}",
+              style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w600, fontSize: 12),
+            ),
+          ),
+        );
+      } else if (b["creditor"] == UserData().id) {
+        isSettled = false;
+        w.add(
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 171, 255, 238),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              "${UserData().getNameInGroup(groupIndex: groupIndex, userId: b['debtor'])} Owes You ${b['amount']}",
+              style: TextStyle(color: Color(0xFF00D4AA), fontWeight: FontWeight.w600, fontSize: 12),
+            ),
+          ),
+        );
+      }
+    });
+
+    if (isSettled) {
+      w.add(
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 189, 255, 191),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text("Settled", style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 12)),
+        ),
+      );
+    }
+
+    return w;
   }
 
 
@@ -162,11 +216,6 @@ class _GroupsScreenState extends State<GroupsScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: const Color(0xFF00D4AA),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
 
@@ -178,7 +227,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
         index++;
         continue;
       }
-      widgets.add(_buildGroupCard(group['name'],"${group['members'].length} members",group['total'],[], Icons.group, index));
+      widgets.add(_buildGroupCard(UserData().balanceList[index],group['name'],"${group['members'].length} members",group['total'],[], Icons.group, index));
       index++;
     }
 
@@ -186,6 +235,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
   }
 
   Widget _buildGroupCard(
+    dynamic balance,
     String title,
     String members,
     int totalAmount,
@@ -270,6 +320,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                   ),
                 ],
               ),
+              Wrap(children: balanceList(balance,index))
             ],
           ),
         ],

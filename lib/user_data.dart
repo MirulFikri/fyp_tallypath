@@ -20,6 +20,7 @@ class UserData extends ChangeNotifier {
   String? dob;
 
   List<dynamic> groupList = [];
+  List<dynamic> balanceList = [];
 
   /// Initialize from SharedPreferences
   Future<void> init() async {
@@ -31,6 +32,7 @@ class UserData extends ChangeNotifier {
     final userString = prefs.getString('user');
     if (userString != null) {
       updateGroupList();
+      updateBalanceList();
       try {
         final userJson = json.decode(userString);
         _applyUserJson(userJson);
@@ -139,10 +141,12 @@ class UserData extends ChangeNotifier {
     return !(token==null||token=="");
   }
 
-  Future<dynamic> updateGroupList({int groupIndex = 0}) async{
+  Future<dynamic> updateGroupList() async{
     try{
       var updatedList = await Api.getUserGroups();
       groupList = updatedList;
+      var updatedBalance = await updateBalanceList();
+      balanceList = updatedBalance;
       notifyListeners();
     }catch(e){
       print('Error: $e');
@@ -150,11 +154,32 @@ class UserData extends ChangeNotifier {
     return groupList[0];
   }
 
-  String getNameInGroup({int? groupIndex, String? userId}){
-    if(groupIndex!=null && userId !=null){
-      var m = groupList[groupIndex]["members"].firstWhere((m)=>m["userId"]==userId);
-      return m["nameInGroup"];
+    Future<dynamic> updateBalanceList() async {
+    try {
+      var bl = [];
+      for(var g in groupList){
+        var balance = await Api.getGroupBalance(g["groupId"]);
+        bl.add(balance);
+      }
+      return bl;
+    } catch (e) {
+      print('Error: $e');
     }
-    return "";
+    return balanceList[0];
+  }
+
+
+  String getNameInGroup({int? groupIndex, String? userId}){
+    if(userId==id) return "You";
+    try{
+      if(groupIndex!=null && userId !=null){
+        var m = groupList[groupIndex]["members"].firstWhere((m)=>m["userId"]==userId);
+        return m["nameInGroup"];
+      }
+      return "";
+    }catch(e){
+      print(e);
+      return "null";
+    }
   }
 }

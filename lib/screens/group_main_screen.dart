@@ -18,6 +18,7 @@ class GroupMainScreen extends StatefulWidget {
 }
 
 class _GroupMainScreenState extends State<GroupMainScreen> {
+  final TextEditingController _messageController = TextEditingController();
   List<dynamic> expenses = [];
   bool isLoading = true;
   var groupBalance = [];
@@ -56,7 +57,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      persistentFooterButtons: [BigAddButton(onPressed: _showAddExpenseDialog, height: 60)],
+      //persistentFooterButtons: [BigAddButton(onPressed: _showAddExpenseDialog, height: 60)],
       backgroundColor: const Color(0xFFE8F9F5),
       appBar: AppBar(
         backgroundColor: Color(0xFF00D4AA),
@@ -115,7 +116,6 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                       ),
                     ],
                   ),
-                  Text(groupBalance.toString()),
                   Wrap(children:balanceList(groupBalance)),
                   //const SizedBox(height:20),
                 ],
@@ -133,6 +133,19 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                 ),
               ),
             ),
+
+            SizedBox(height:5),
+            FloatingMessageInputBar(
+                controller: _messageController,
+                onSend: () {
+                  final text = _messageController.text.trim();
+                  if (text.isEmpty) return;
+                  // handle send
+                  _messageController.clear();
+                },
+                buttonFunction: _showAddExpenseDialog,
+              )
+
           ],
         ),
       ),
@@ -156,7 +169,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
   Future<void> _loadNewExpenses() async {
     try {
-      members = UserData().groupList[widget.groupIndex]["members"];
+      members = [...UserData().groupList[widget.groupIndex]["members"]];
       you ??= members.firstWhere((m) => m["userId"] == UserData().id, orElse: () => null);
       members.removeWhere((m) => m["userId"] == you["userId"]);
       String lastTimestamp = you["joinedAt"];
@@ -292,6 +305,16 @@ List<Widget> balanceList(List<dynamic> balance){
     DateTime dateTime = Globals.parseDateToLocal(expense["createdAt"]);
     String timeStr = formatter.format(dateTime);
 
+    return ExpenseMessageBubble2(
+      creatorName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["creatorId"]),
+      paidByName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["paidBy"]),
+      title: expense["title"],
+      amount: Globals.formatCurrency(expense["amount"]/100),
+      isMe:expense["creatorId"]==you["userId"],
+      groupIndex: widget.groupIndex,
+      splits: expense["splits"],
+    );
+/*
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -325,173 +348,8 @@ List<Widget> balanceList(List<dynamic> balance){
         ],
       ),
     );
-  }
-}
 
-class BigAddButton extends StatelessWidget {
-  final VoidCallback onPressed;
-  final String label;
-  final double height;
-  final Widget? icon;
-  final BorderRadiusGeometry borderRadius;
-  final Gradient? gradient;
-  final EdgeInsetsGeometry padding;
-  final List<BoxShadow>? boxShadow;
-
-  const BigAddButton({
-    super.key,
-    required this.onPressed,
-    this.label = 'Add',
-    this.height = 50,
-    this.icon,
-    this.borderRadius = const BorderRadius.only(
-      topLeft: Radius.circular(10),
-      topRight: Radius.circular(10),
-      bottomLeft: Radius.circular(10),
-      bottomRight: Radius.circular(10),
-    ),
-    this.gradient,
-    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-    this.boxShadow,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final Gradient effectiveGradient =
-        gradient ??
-        LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primaryContainer],
-        );
-
-    final List<BoxShadow> effectiveShadow =
-        boxShadow ?? [BoxShadow(color: Colors.black.withOpacity(0.18), offset: const Offset(0, -2), blurRadius: 12)];
-
-    // Use SafeArea + Material+InkWell to get ripple and proper accessibility
-    return SafeArea(
-      top: false,
-      child: Container(
-        height: height,
-        padding: EdgeInsets.zero,
-        decoration: BoxDecoration(gradient: effectiveGradient, borderRadius: borderRadius, boxShadow: effectiveShadow),
-        // Material gives elevation/ripple surface for InkWell
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: borderRadius is BorderRadius ? borderRadius as BorderRadius : BorderRadius.circular(16),
-            onTap: onPressed,
-            child: Padding(
-              padding: padding,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Optional icon
-                  if (icon != null) ...[
-                    icon!,
-                    const SizedBox(width: 12),
-                  ] else ...[
-                    const Icon(Icons.add_circle_outline, size: 30, semanticLabel: 'Add'),
-                    const SizedBox(width: 12),
-                  ],
-                  // Label
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.2,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class Segment {
-  final double value;
-  final Color color;
-  final String label;
-
-  Segment({required this.value, required this.color, required this.label});
-}
-
-class SegmentedProgressBar extends StatefulWidget {
-  final List<Segment> segments;
-  final double height;
-  final double borderRadius;
-  final Color backgroundColor;
-
-  const SegmentedProgressBar({
-    super.key,
-    required this.segments,
-    this.height = 14,
-    this.borderRadius = 5,
-    this.backgroundColor = const Color(0xFFE0E0E0),
-  });
-
-  @override
-  State<SegmentedProgressBar> createState() => _SegmentedProgressBarState();
-}
-
-class _SegmentedProgressBarState extends State<SegmentedProgressBar> {
-  @override
-  Widget build(BuildContext context) {
-    final total = widget.segments.fold<double>(0, (sum, item) => sum + item.value);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          //borderRadius: BorderRadius.circular(borderRadius),
-          child: Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(widget.borderRadius)),
-            height: widget.height,
-
-            child: Row(
-              children:
-                  widget.segments.map((s) {
-                    final percent = s.value / total;
-
-                    return Expanded(
-                      flex: (percent * 1000).round(),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(widget.borderRadius),
-                          color: s.color,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 12,
-          children:
-              widget.segments.map((s) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(width: 8, height: 8, color: s.color),
-                    const SizedBox(width: 4),
-                    Text(' ${s.label} ${s.value}% ', style: TextStyle(color: Colors.white)),
-                  ],
-                );
-              }).toList(),
-        ),
-      ],
-    );
+    */
   }
 }
 
@@ -625,6 +483,8 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                 controller: splitControllers[index],
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
                   isCollapsed: true,
                   contentPadding: EdgeInsets.all(12),
                   hintText: 'RM 0.00',
@@ -665,6 +525,8 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               TextFormField(
                 controller: titleController,
                 decoration: InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
                   hintText: 'New Expense',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
@@ -686,6 +548,8 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                 controller: amountController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
                   hintText: 'RM 0.00',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
@@ -714,6 +578,8 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               DropdownButtonFormField<String>(
                 initialValue: selectedName,
                 decoration: const InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
                   labelText: 'Select person',
                   border: OutlineInputBorder(),
                 ),
@@ -768,6 +634,8 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                     controller: splitController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      filled: true,
                       isCollapsed: true,
                       contentPadding: EdgeInsets.all(12),
                       hintText: 'RM 0.00',
@@ -790,20 +658,6 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               Column(children: _buildExpenseSplit()),
               const SizedBox(height: 8),
               Divider(thickness: 1),
-              const SizedBox(height: 16),
-              const Text('Description (Optional)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: descController,
-                decoration: InputDecoration(
-                  hintText: 'Expense details',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF00D4AA)),
-                  ),
-                ),
-              ),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -836,9 +690,11 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
             splitController.clear();
             Navigator.pop(context);
           },
-          child: const Text('Cancel'),
+          child: const Text('Cancel', style:TextStyle(fontWeight: FontWeight.bold)),
         ),
-        ElevatedButton(
+        FloatingActionButton(
+          backgroundColor: const Color(0xFF00D4AA),
+          child: const Icon(Icons.add, color: Colors.white),
           onPressed: () async{
             FocusScope.of(context).unfocus();
             await Future<void>.delayed(Duration.zero);
@@ -879,10 +735,257 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               ).showSnackBar(const SnackBar(content: Text('Please enter a valid value'), backgroundColor: Colors.red));
             }
           },
-          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00D4AA)),
-          child: const Text('Save'),
-        ),
+        )
       ],
     );
   }
 }
+
+
+class ExpenseMessageBubble2 extends StatelessWidget {
+  final String creatorName;
+  final String paidByName;
+  final String title;
+  final String amount;
+  final int groupIndex;
+  final String? description;
+  final bool isMe;
+  final List<dynamic> splits;
+
+  const ExpenseMessageBubble2({
+    super.key,
+    required this.creatorName,
+    required this.paidByName,
+    required this.title,
+    required this.amount,
+    required this.groupIndex,
+    required this.splits,
+    this.description,
+    this.isMe = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 340),
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isMe
+              ? theme.colorScheme.primary.withOpacity(0.12)
+              : Colors.white,
+          borderRadius: BorderRadius.only(
+            topRight: const Radius.circular(20),
+            bottomLeft: const Radius.circular(20),
+            topLeft: Radius.circular(isMe ? 20 : 2),
+            bottomRight: Radius.circular(isMe ? 2 : 20),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// Creator / payer info (low emphasis)
+            Text(
+              isMe ? 'Paid by $paidByName' :'$creatorName • Paid by $paidByName',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            /// Title + Amount (HIGH emphasis)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  amount,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+
+            if (description != null && description!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                description!,
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+
+            SharePreviewList(
+              groupIndex: groupIndex,
+              shares: splits,
+              previewCount: 2,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SharePreviewList extends StatefulWidget {
+  final List<dynamic> shares;
+  final int previewCount;
+  final int groupIndex;
+
+  const SharePreviewList({
+    super.key,
+    required this.shares,
+    this.previewCount = 2,
+    required this.groupIndex,
+  });
+
+  @override
+  State<SharePreviewList> createState() => _SharePreviewListState();
+}
+
+class _SharePreviewListState extends State<SharePreviewList> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final total = widget.shares.length;
+    final visibleCount = _expanded
+        ? total
+        : total.clamp(0, widget.previewCount);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ...List.generate(visibleCount, (index) {
+          final item = widget.shares[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: item['userId']),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+                Text(
+                  Globals.formatCurrency(item['share']/100),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+
+        if (total > widget.previewCount)
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                _expanded
+                    ? 'Show less'
+                    : '+ ${total - widget.previewCount} more',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+
+
+class FloatingMessageInputBar extends StatelessWidget {
+  final TextEditingController controller;
+  final VoidCallback onSend;
+  final String hintText;
+  final VoidCallback buttonFunction;
+
+  const FloatingMessageInputBar({
+    super.key,
+    required this.controller,
+    required this.onSend,
+    this.hintText = 'Add messages, receipts, etc',
+    required this.buttonFunction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 16, offset: const Offset(0, 6))],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  minLines: 1,
+                  maxLines: 4,
+                  style: const TextStyle(fontSize: 15, color: Colors.black),
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(vertical: 18.0, horizontal: 10.0),
+                    isDense: true, // Helps remove extra default padding
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: hintText,
+                    hintStyle: TextStyle(color: Colors.grey.shade500),
+                    // border: InputBorder.none,
+                    isCollapsed: true,
+                    suffixIcon: IconButton(
+                      iconSize: 20,
+                      icon: const Icon(Icons.send_sharp),
+                      onPressed: (){}, // 4. Assign your action to onPressed
+                      tooltip: 'Send Message',
+                    ),
+                    // prefixIcon: IconButton(
+                    //   icon: const Icon(Icons.add),
+                    //   onPressed: () {}, // 4. Assign your action to onPressed
+                    //   tooltip: 'Attach photos',
+                    // ),
+                  ),
+                ),
+              ),
+              SizedBox(width:18),
+              FloatingActionButton(
+                onPressed: buttonFunction,
+                backgroundColor: const Color(0xFF00D4AA),
+                child: const Icon(Icons.add, color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
