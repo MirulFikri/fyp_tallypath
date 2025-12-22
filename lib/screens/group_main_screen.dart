@@ -242,7 +242,7 @@ List<Widget> balanceList(List<dynamic> balance){
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
-          "You Owe ${UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b['creditor'])} ${b['amount']}",
+          "You Owe ${UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b['creditor'])} ${Globals.formatCurrency(b['amount']/100)}",
           style: TextStyle(
             color: Colors.orange,
             fontWeight: FontWeight.w600,
@@ -263,7 +263,7 @@ List<Widget> balanceList(List<dynamic> balance){
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
-          "${UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b['debtor'])} Owes You ${b['amount']}",
+          "${UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b['debtor'])} Owes You ${Globals.formatCurrency(b['amount']/100)}",
           style: TextStyle(
           color: Color(0xFF00D4AA),
             fontWeight: FontWeight.w600,
