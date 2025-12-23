@@ -93,7 +93,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(Icons.payments_sharp, color: Colors.white, size: 32),
@@ -163,7 +163,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
       });
       _loadNewExpenses();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if(mounted)ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
@@ -190,7 +190,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if(mounted)ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
@@ -228,7 +228,7 @@ List<Widget> balanceList(List<dynamic> balance){
   List<Widget> w = [];
   var isSettled = true;
 
-  balance.forEach((b){
+  for (var b in balance) {
     if(b["debtor"] == UserData().id){
       isSettled = false;
       w.add(Container(
@@ -272,7 +272,7 @@ List<Widget> balanceList(List<dynamic> balance){
         ),
       ));
     }
-  });
+  }
 
   if(isSettled){
       w.add(Container(
@@ -429,7 +429,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
       splitController.number = amount / 100;
     });
     names.add(UserData().id.toString());
-    widget.members.forEach((member){names.add(member['userId'].toString());});
+    for (var member in widget.members) {names.add(member['userId'].toString());}
     super.initState();
   }
 
@@ -564,11 +564,9 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                   return null;
                 },
                 onChanged: (value) {
-                  if (value != null) {
                     setState(() {
                       amt = ((amountController.number ?? 0) * 100).toInt();
                     });
-                  }
                 },
               ),
               SizedBox(height: 16),
@@ -723,16 +721,20 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               try {
                 await Api.createExpense(body, UserData().groupList[widget.groupIndex]["groupId"]);
               } catch (e) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+                if (mounted) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+                }
               }
 
               Navigator.pop(context);
             } else {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Please enter a valid value'), backgroundColor: Colors.red));
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid value'), backgroundColor: Colors.red),
+                );
+              }
             }
           },
         )
@@ -776,7 +778,7 @@ class ExpenseMessageBubble2 extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: isMe
-              ? theme.colorScheme.primary.withOpacity(0.12)
+              ? theme.colorScheme.primary.withValues(alpha: 0.12)
               : Colors.white,
           borderRadius: BorderRadius.only(
             topRight: const Radius.circular(20),
@@ -940,7 +942,7 @@ class FloatingMessageInputBar extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 16, offset: const Offset(0, 6))],
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 16, offset: const Offset(0, 6))],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,

@@ -24,7 +24,8 @@ class Globals {
     return 'RM $result.$decimalPart';
   }
 
-  static String parseDateToUtc(DateTime dt) {
+  static String? parseDateToUtc(DateTime? dt) {
+    if(dt==null)return null;
     final formatter = DateFormat('yyyy-MM-ddTHH:mm:ss');
     return "${formatter.format(dt.toUtc())}Z";
   }
@@ -37,3 +38,4 @@ class Globals {
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();

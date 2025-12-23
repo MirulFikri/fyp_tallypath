@@ -20,7 +20,7 @@ class Api{
           final data = jsonDecode(res.body);
           return data;
       } else {
-        throw(res.body);
+        throw ("Code ${res.statusCode}: ${res.body}");
       }
     } catch (e) {
       rethrow;
@@ -44,7 +44,7 @@ class Api{
           final data = jsonDecode(res.body);
           return data;
       } else {
-        throw(res.body);
+        throw ("Code ${res.statusCode}: ${res.body}");
       }
     } catch (e) {
       rethrow;
@@ -64,7 +64,7 @@ class Api{
       if (res.statusCode == 200) {
         return;
       } else {
-        throw (res.body);
+        throw ("Code ${res.statusCode}: ${res.body}");
       }
     } catch (e) {
       rethrow;
@@ -84,7 +84,7 @@ class Api{
         final data = jsonDecode(res.body);
         return data;
       } else {
-        throw (res.body);
+        throw ("Code ${res.statusCode}: ${res.body}");
       }
     } catch (e) {
       rethrow;
@@ -103,7 +103,7 @@ class Api{
         final data = jsonDecode(res.body);
         return data;
       } else {
-        throw (res.body);
+        throw ("Code ${res.statusCode}: ${res.body}");
       }
     } catch (e) {
       rethrow;
@@ -111,5 +111,61 @@ class Api{
   }
 
 
+  static Future<List<dynamic>> getUserPlans() async {
+    final url = Uri.parse("${Globals.baseUrl}/api/savings/user");
+    try {
+      final res = await authClient.get(
+        url,
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return data;
+      } else {
+        throw ("Code ${res.statusCode}: ${res.body}");
+      }
+    } catch (e) {
+      rethrow;
+    } 
+  }
+
+  static Future<void> createPlan(String body) async {
+    final url = Uri.parse("${Globals.baseUrl}/api/savings/create");
+    try {
+      final res = await authClient.post(
+        url,
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
+        body: body,
+      );
+
+      if (res.statusCode == 200) {
+        print(res.body);
+      } else {
+        throw ("Code ${res.statusCode}: ${res.body}");
+      }
+    } catch (e) {
+      rethrow;
+    } 
+  }
+
+  static Future<List<dynamic>> getPlanContributions(String planId) async {
+    final url = Uri.parse("${Globals.baseUrl}/api/savings/plan/$planId");
+    try {
+      final res = await authClient.get(
+        url,
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return data;
+      } else {
+        throw ("Code ${res.statusCode}: ${res.body}");
+      }
+    } catch (e) {
+      rethrow;
+    } 
+  }
 
 }

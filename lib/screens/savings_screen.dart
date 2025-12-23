@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'savings_detail_screen.dart';
 import 'create_goal_screen.dart';
@@ -10,46 +11,88 @@ class SavingsScreen extends StatefulWidget {
   State<SavingsScreen> createState() => _SavingsScreenState();
 }
 
-class _SavingsScreenState extends State<SavingsScreen> {
+class _SavingsScreenState extends State<SavingsScreen> with RouteAware{
   String selectedFilter = 'All'; // All, Active, Completed
+
+  @override
+  void initState() {
+    _loadUserGoals();
+    super.initState();
+  }
+
+  void _loadUserGoals()async{
+    try{
+      final goals = await Api.getUserPlans();
+      setState(() {
+        allGoals = [...allGoals, ...goals];
+      });
+    }catch(e){
+      print(e);
+      if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
+
+  //  subscribe/unsubscribe to route observer
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPush() {
+    // This page was pushed
+    _loadUserGoals();
+  }
+
+  @override
+  void didPopNext() {
+    // Returned to this page (another page popped)
+    _loadUserGoals();
+  }
 
 
   // All savings goals - simple structure
-  final List<Map<String, dynamic>> allGoals = [
+  List<Map<String, dynamic>> allGoals = [
     {
+      'id':'123',
       'title': 'New Laptop',
-      'target': 3000.00,
-      'current': 2100.00,
-      'deadline': DateTime(2025, 12, 31),
-      'icon': Icons.laptop_mac,
+      'target': 300000,
+      'current': 210000,
+      'due': DateTime(2025, 12, 31).toString(),
     },
     {
+      'id':'123',
       'title': 'Emergency Fund',
-      'target': 10000.00,
-      'current': 4500.00,
-      'deadline': DateTime(2026, 6, 30),
-      'icon': Icons.security,
+      'target': 1000000,
+      'current': 450000,
+      'due': DateTime(2026, 6, 30).toString(),
     },
     {
+      'id':'123',
       'title': 'Vacation Trip',
-      'target': 5000.00,
-      'current': 1200.00,
-      'deadline': DateTime(2026, 3, 15),
-      'icon': Icons.flight,
+      'target': 500000,
+      'current': 120000,
+      'due': DateTime(2026, 3, 15).toString(),
     },
     {
+      'id':'123',
       'title': 'General Savings',
-      'target': 2000.00,
-      'current': 800.00,
-      'deadline': null, // No deadline
-      'icon': Icons.account_balance_wallet,
+      'target': 200000,
+      'current': 80000,
+      'due': null, // No deadline
     },
     {
       'title': 'Investment Fund',
-      'target': 5000.00,
-      'current': 1500.00,
-      'deadline': DateTime(2027, 6, 30),
-      'icon': Icons.trending_up,
+      'target': 500000,
+      'current': 150000,
+      'due': DateTime(2027, 6, 30).toString(),
     },
   ];
 
@@ -166,7 +209,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      Globals.formatCurrency(totalSavings),
+                      Globals.formatCurrency(totalSavings/100),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 36,
@@ -177,7 +220,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildSavingsStat('Target', Globals.formatCurrency(totalTarget).substring(3)),
+                        _buildSavingsStat('Target', Globals.formatCurrency(totalTarget/100).substring(3)),
                         Container(
                           width: 1,
                           height: 30,
@@ -286,8 +329,8 @@ class _SavingsScreenState extends State<SavingsScreen> {
   }
 
   Widget _buildSavingsCard(Map<String, dynamic> goal) {
+    final tempIcon = Icons.abc;
     double progress = goal['current'] / goal['target'];
-    DateTime? deadline = goal['deadline'];
 
     return GestureDetector(
       onTap: () {
@@ -316,7 +359,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                     color: const Color(0xFFD4F4ED),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(goal['icon'], color: const Color(0xFF00D4AA)),
+                  child: Icon(tempIcon, color: const Color(0xFF00D4AA)),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -332,7 +375,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        getDeadlineText(deadline),
+                        goal['due']==null ? "Not Set" : getDeadlineText(Globals.parseDateToLocal(goal['due'])),
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],
@@ -355,7 +398,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  Globals.formatCurrency(goal['current']),
+                  Globals.formatCurrency(goal['current']/100),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -363,7 +406,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                   ),
                 ),
                 Text(
-                  'of ${Globals.formatCurrency(goal['target'])}',
+                  'of ${Globals.formatCurrency(goal['target']/100)}',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],

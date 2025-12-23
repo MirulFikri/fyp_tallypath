@@ -11,27 +11,28 @@ class SavingsDetailScreen extends StatefulWidget {
 }
 
 class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
+  final tempIcon = Icons.abc;
   // Mock contribution history (will come from database later)
   List<Map<String, dynamic>> contributions = [
     {
       'amount': 500.00,
       'note': 'Initial deposit',
-      'date': DateTime(2025, 10, 1),
+      'createdAt': DateTime(2025, 10, 1),
     },
     {
       'amount': 800.00,
       'note': 'October savings',
-      'date': DateTime(2025, 10, 15),
+      'createdAt': DateTime(2025, 10, 15),
     },
     {
       'amount': 300.00,
       'note': 'Bonus money',
-      'date': DateTime(2025, 11, 1),
+      'createdAt': DateTime(2025, 11, 1),
     },
     {
       'amount': 500.00,
       'note': 'November savings',
-      'date': DateTime(2025, 11, 10),
+      'createdAt': DateTime(2025, 11, 10),
     },
   ];
 
@@ -152,7 +153,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
                       'note': noteController.text.isEmpty 
                           ? 'Contribution' 
                           : noteController.text,
-                      'date': DateTime.now(),
+                      'createdAt': DateTime.now(),
                     });
                   });
                   
@@ -235,7 +236,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            widget.plan['icon'],
+                            tempIcon, 
                             color: Colors.white,
                             size: 32,
                           ),
@@ -401,7 +402,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
   }
 
   Widget _buildContributionItem(Map<String, dynamic> contribution) {
-    DateTime date = contribution['date'];
+    DateTime date = contribution['createdAt'];
     String dateStr = '${date.day}/${date.month}/${date.year}';
     
     return Container(

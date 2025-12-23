@@ -60,14 +60,14 @@ class _LoginScreenState extends State<LoginScreen> {
               }
             }
         } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server Error: ${res.body}")));
+          }
         }
       } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Network error: $e")));
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+          }
       } finally {
         setState(() => _isLoading = false);
       }

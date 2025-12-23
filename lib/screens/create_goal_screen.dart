@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/api.dart';
+import 'package:fyp_tallypath/globals.dart';
 
 class CreateGoalScreen extends StatefulWidget {
   const CreateGoalScreen({super.key});
@@ -131,7 +135,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
     );
   }
 
-  void _createGoal() {
+  void _createGoal() async {
     // Validate inputs
     if (titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -154,17 +158,27 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
       return;
     }
 
-    // Create goal object
-    final newGoal = {
-      'title': titleController.text,
-      'target': target,
-      'current': 0.0,
-      'deadline': selectedDeadline,
-      'icon': selectedIcon,
-    };
+    //use integer cents format before uploading to database
+    target *= 100;
 
-    // TODO: Save goal to database
-    // For now, just return the goal object
+    String? due = Globals.parseDateToUtc(selectedDeadline);
+    if(due != null) due = "\"$due\"";
+    // Create goal object
+    final newGoal = """{
+      "title": "${titleController.text}",
+      "target": $target,
+      "current": 0,
+      "due": $due
+    }
+    """;
+
+    try{
+      await Api.createPlan(newGoal);
+    }catch(e){
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('Error: $e')));
+    }
+
     Navigator.pop(context, newGoal);
 
     ScaffoldMessenger.of(context).showSnackBar(
