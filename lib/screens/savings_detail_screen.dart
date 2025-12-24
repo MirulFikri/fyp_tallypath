@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
 
 class SavingsDetailScreen extends StatefulWidget {
@@ -12,28 +13,32 @@ class SavingsDetailScreen extends StatefulWidget {
 
 class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
   final tempIcon = Icons.abc;
+  late double localCurrent = 0;
   // Mock contribution history (will come from database later)
+
+
+  @override
+  void initState() {
+    _loadSavingsContribution();
+    localCurrent = widget.plan['current'];
+    super.initState();
+  }
+
+  void _loadSavingsContribution() async {
+    try {
+      final con = await Api.getSavingsContributions(widget.plan["id"]);
+      setState(() {
+        contributions = [...con];
+      });
+    } catch (e) {
+      print(e);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
+
+
   List<Map<String, dynamic>> contributions = [
-    {
-      'amount': 500.00,
-      'note': 'Initial deposit',
-      'createdAt': DateTime(2025, 10, 1),
-    },
-    {
-      'amount': 800.00,
-      'note': 'October savings',
-      'createdAt': DateTime(2025, 10, 15),
-    },
-    {
-      'amount': 300.00,
-      'note': 'Bonus money',
-      'createdAt': DateTime(2025, 11, 1),
-    },
-    {
-      'amount': 500.00,
-      'note': 'November savings',
-      'createdAt': DateTime(2025, 11, 10),
-    },
+
   ];
 
 
@@ -142,26 +147,25 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 double? amount = double.tryParse(amountController.text);
                 if (amount != null && amount > 0) {
-                  // TODO: Save contribution to database
-                  setState(() {
-                    widget.plan['current'] += amount;
-                    contributions.insert(0, {
-                      'amount': amount,
-                      'note': noteController.text.isEmpty 
-                          ? 'Contribution' 
-                          : noteController.text,
-                      'createdAt': DateTime.now(),
-                    });
-                  });
-                  
+                  //convert to int cents before transferring to database
+                  amount *= 100;
+                  String body = """
+                    {
+                      "Note": "${noteController.text.isEmpty ? 'Contribution' : noteController.text}",
+                      "Amount": $amount
+                    }
+                  """;
+                  await Api.createContribution(body, widget.plan["id"]);
+                  _loadSavingsContribution();
+                  localCurrent += amount;
                   Navigator.pop(context);
                   
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Added ${Globals.formatCurrency(amount)} to ${widget.plan['title']}'),
+                      content: Text('Added ${Globals.formatCurrency(amount/100)} to ${widget.plan['title']}'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -187,7 +191,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double progress = widget.plan['current'] / widget.plan['target'];
+    double progress = localCurrent / widget.plan['target'];
     DateTime? deadline = widget.plan['deadline'];
 
     return Scaffold(
@@ -255,7 +259,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                Globals.formatCurrency(widget.plan['current']),
+                                Globals.formatCurrency(localCurrent/100),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 28,
@@ -290,7 +294,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
                           ),
                         ),
                         Text(
-                          'Goal: ${Globals.formatCurrency(widget.plan['target'])}',
+                          'Goal: ${Globals.formatCurrency(widget.plan['target']/100)}',
                           style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 14,
@@ -402,7 +406,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
   }
 
   Widget _buildContributionItem(Map<String, dynamic> contribution) {
-    DateTime date = contribution['createdAt'];
+    DateTime date = Globals.parseDateToLocal(contribution['createdAt']);
     String dateStr = '${date.day}/${date.month}/${date.year}';
     
     return Container(
@@ -450,7 +454,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
             ),
           ),
           Text(
-            '+${Globals.formatCurrency(contribution['amount'])}',
+            '+${Globals.formatCurrency(contribution['amount']/100)}',
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,

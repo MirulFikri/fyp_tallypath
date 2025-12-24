@@ -149,8 +149,8 @@ class Api{
     } 
   }
 
-  static Future<List<dynamic>> getPlanContributions(String planId) async {
-    final url = Uri.parse("${Globals.baseUrl}/api/savings/plan/$planId");
+  static Future<List<dynamic>> getSavingsContributions(String savingsId) async {
+    final url = Uri.parse("${Globals.baseUrl}/api/savings/contribution/$savingsId");
     try {
       final res = await authClient.get(
         url,
@@ -166,6 +166,25 @@ class Api{
     } catch (e) {
       rethrow;
     } 
+  }
+
+    static Future<void> createContribution(String body, String savingsId) async {
+    final url = Uri.parse("${Globals.baseUrl}/api/savings/contribution/create/$savingsId");
+    try {
+      final res = await authClient.post(
+        url,
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
+        body: body,
+      );
+
+      if (res.statusCode == 200) {
+        print(res.body);
+      } else {
+        throw ("Code ${res.statusCode}: ${res.body}");
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 
 }

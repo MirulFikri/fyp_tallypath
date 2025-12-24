@@ -24,7 +24,7 @@ class _SavingsScreenState extends State<SavingsScreen> with RouteAware{
     try{
       final goals = await Api.getUserPlans();
       setState(() {
-        allGoals = [...allGoals, ...goals];
+        allGoals = [...goals];
       });
     }catch(e){
       print(e);
@@ -60,40 +60,7 @@ class _SavingsScreenState extends State<SavingsScreen> with RouteAware{
 
   // All savings goals - simple structure
   List<Map<String, dynamic>> allGoals = [
-    {
-      'id':'123',
-      'title': 'New Laptop',
-      'target': 300000,
-      'current': 210000,
-      'due': DateTime(2025, 12, 31).toString(),
-    },
-    {
-      'id':'123',
-      'title': 'Emergency Fund',
-      'target': 1000000,
-      'current': 450000,
-      'due': DateTime(2026, 6, 30).toString(),
-    },
-    {
-      'id':'123',
-      'title': 'Vacation Trip',
-      'target': 500000,
-      'current': 120000,
-      'due': DateTime(2026, 3, 15).toString(),
-    },
-    {
-      'id':'123',
-      'title': 'General Savings',
-      'target': 200000,
-      'current': 80000,
-      'due': null, // No deadline
-    },
-    {
-      'title': 'Investment Fund',
-      'target': 500000,
-      'current': 150000,
-      'due': DateTime(2027, 6, 30).toString(),
-    },
+
   ];
 
   // Filter goals based on selected filter
