@@ -166,7 +166,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
     // Create goal object
     final newGoal = """{
       "title": "${titleController.text}",
-      "target": $target,
+      "target": ${target.toInt()},
       "current": 0,
       "due": $due
     }

@@ -20,7 +20,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
   @override
   void initState() {
     _loadSavingsContribution();
-    localCurrent = widget.plan['current'];
+    localCurrent = widget.plan['current'].toDouble();
     super.initState();
   }
 
@@ -155,7 +155,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
                   String body = """
                     {
                       "Note": "${noteController.text.isEmpty ? 'Contribution' : noteController.text}",
-                      "Amount": $amount
+                      "Amount": ${amount.toInt()}
                     }
                   """;
                   await Api.createContribution(body, widget.plan["id"]);
