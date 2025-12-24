@@ -136,12 +136,10 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
 
             SizedBox(height:5),
             FloatingMessageInputBar(
+                groupIndex: widget.groupIndex,
                 controller: _messageController,
                 onSend: () {
-                  final text = _messageController.text.trim();
-                  if (text.isEmpty) return;
-                  // handle send
-                  _messageController.clear();
+                  _loadNewExpenses();
                 },
                 buttonFunction: _showAddExpenseDialog,
               )
@@ -198,6 +196,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
     List<Widget> widgets = [];
     String? lastDate;
     final formatter = DateFormat("dd MMM yyyy");
+    String prevId = "";
 
     for (final expense in expenses.reversed.toList()) {
       final currentDate = formatter.format(Globals.parseDateToLocal(expense["createdAt"]));
@@ -217,8 +216,11 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         );
         lastDate = currentDate;
       }
-
-      widgets.add(_buildExpenseItem(expense));
+      if(prevId!=expense["creatorId"]){
+        widgets.add(SizedBox(height:16));
+      }
+      widgets.add(_buildExpenseItem(expense, expense["creatorId"]==prevId));
+      prevId = expense["creatorId"];
     }
 
     return widgets;
@@ -300,57 +302,58 @@ List<Widget> balanceList(List<dynamic> balance){
 
 
 
-  Widget _buildExpenseItem(Map<String, dynamic> expense) {
+  Widget _buildExpenseItem(Map<String, dynamic> expense, bool link) {
     final formatter = DateFormat("HH:mm");
     DateTime dateTime = Globals.parseDateToLocal(expense["createdAt"]);
     String timeStr = formatter.format(dateTime);
 
-    return ExpenseMessageBubble2(
-      creatorName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["creatorId"]),
-      paidByName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["paidBy"]),
-      title: expense["title"],
-      amount: Globals.formatCurrency(expense["amount"]/100),
-      isMe:expense["creatorId"]==you["userId"],
-      groupIndex: widget.groupIndex,
-      splits: expense["splits"],
-    );
-/*
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Color.fromARGB(255, 210, 232, 255),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.add, color: Color.fromARGB(255, 255, 255, 255), size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(expense['title'], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                const SizedBox(height: 4),
-                Text(
-                  Globals.formatCurrency(expense['amount'] / 100),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF00D4AA)),
-                ),
-              ],
-            ),
-          ),
+    return expense["isMessage"] ?
+        _regularBubble(
+          context,
+          name: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["creatorId"]),
+          content: expense["title"],
+          isMe: expense["creatorId"] == you["userId"],
+          link: link
+        )
+        : ExpenseMessageBubble2(
+          creatorName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["creatorId"]),
+          paidByName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["paidBy"]),
+          title: expense["title"],
+          amount: Globals.formatCurrency(expense["amount"]/100),
+          isMe:expense["creatorId"]==you["userId"],
+          groupIndex: widget.groupIndex,
+          splits: expense["splits"],
+        );
+  }
+}
 
-          Text(timeStr, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+Widget _regularBubble(BuildContext context, {required String name, required String content, required bool isMe, required bool link}){
+  final theme = Theme.of(context);
+  return Align(
+    alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+    child: Container(
+      constraints: const BoxConstraints(maxWidth: 300),
+      margin: EdgeInsets.symmetric(vertical: 2, horizontal: 12),
+      padding: link ? EdgeInsets.symmetric(vertical: 10, horizontal: 18) : EdgeInsets.symmetric(vertical: 6, horizontal: 18),
+      decoration: BoxDecoration(
+        color: isMe ? theme.colorScheme.primary.withValues(alpha: 0.12) : Colors.white,
+        borderRadius: BorderRadius.only(
+          topRight: const Radius.circular(20),
+          bottomLeft: const Radius.circular(20),
+          topLeft: Radius.circular(isMe ? 20 : 2),
+          bottomRight: Radius.circular(isMe ? 2 : 20),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children:[
+          isMe || link ? SizedBox(height: 0) : Text(name,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
+          isMe || link ? SizedBox(height:0) : SizedBox(width:name.length*5, height:7, child: Divider(thickness: 0.3,)),
+          Wrap(children:[Text(content, style: theme.textTheme.bodySmall)]),
         ],
       ),
-    );
-
-    */
-  }
+    ),
+  );
 }
 
 class SliderController extends ValueNotifier<double> {
@@ -708,6 +711,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               });
               var splits = [{"userId": UserData().id, "share": amts[0]}];
               for(var i = 0; i < widget.members.length; i++){
+                if(amts[i + 1] == 0)continue;
                 splits.add({"userId":widget.members[i]["userId"], "share":amts[i+1]});
               }
               final String body = jsonEncode({
@@ -715,7 +719,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                 "title": titleController.text.trim(),
                 "amount": amt,
                 "paidBy": selectedName,
-                "splits":splits
+                "splits":splits,
               });
 
               try {
@@ -924,6 +928,7 @@ class FloatingMessageInputBar extends StatelessWidget {
   final VoidCallback onSend;
   final String hintText;
   final VoidCallback buttonFunction;
+  final int groupIndex;
 
   const FloatingMessageInputBar({
     super.key,
@@ -931,6 +936,7 @@ class FloatingMessageInputBar extends StatelessWidget {
     required this.onSend,
     this.hintText = 'Add messages, receipts, etc',
     required this.buttonFunction,
+    required this.groupIndex,
   });
 
   @override
@@ -966,7 +972,21 @@ class FloatingMessageInputBar extends StatelessWidget {
                     suffixIcon: IconButton(
                       iconSize: 20,
                       icon: const Icon(Icons.send_sharp),
-                      onPressed: (){}, // 4. Assign your action to onPressed
+                      onPressed: ()async{
+                        final String body = jsonEncode({
+                          "groupId": UserData().groupList[groupIndex]["groupId"],
+                          "title": controller.text.trim(),
+                          "isMessage":true
+                        });
+                        try {
+                          await Api.createExpense(body, UserData().groupList[groupIndex]["groupId"]);
+                          onSend();
+                          controller.clear();
+                        } catch (e) {
+                          ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text('Error: $e')));
+                        }
+                        
+                      },
                       tooltip: 'Send Message',
                     ),
                     // prefixIcon: IconButton(
