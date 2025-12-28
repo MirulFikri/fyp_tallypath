@@ -23,59 +23,69 @@ class _GroupsScreenState extends State<GroupsScreen> {
     UserData().updateGroupList();
     super.initState();
   }
-List<Widget> balanceList(List<dynamic> balance, int groupIndex) {
+Widget balanceList(List<dynamic> balance, int groupIndex) {
     List<Widget> w = [];
     var isSettled = true;
+    var d = balance.where((b) => b["debtor"] == UserData().id).length;
+    var c = balance.where((b) => b["creditor"] == UserData().id).length;
 
-    balance.forEach((b) {
+    for (var b in balance) {
       if (b["debtor"] == UserData().id) {
         isSettled = false;
-        w.add(
-          Container(
-            margin: const EdgeInsets.all(10),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 255, 232, 198),
-              borderRadius: BorderRadius.circular(12),
+        return SafeArea(
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 255, 190, 190),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        "$d Pending Debt",
+                        style: TextStyle(color: const Color.fromARGB(255, 255, 105, 94), fontWeight: FontWeight.w600, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            child: Text(
-              "You Owe ${UserData().getNameInGroup(groupIndex: groupIndex, userId: b['creditor'])} ${Globals.formatCurrency(b['amount'] / 100)}",
-              style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w600, fontSize: 12),
-            ),
-          ),
-        );
+          );
       } else if (b["creditor"] == UserData().id) {
         isSettled = false;
-        w.add(
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Color.fromARGB(255, 171, 255, 238),
-              borderRadius: BorderRadius.circular(12),
+        return SafeArea(
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 216, 255, 196),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        "$c Pending Credit",
+                        style: TextStyle(color: Color.fromARGB(255, 46, 212, 0), fontWeight: FontWeight.w600, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            child: Text(
-              "${UserData().getNameInGroup(groupIndex: groupIndex, userId: b['debtor'])} Owes You ${Globals.formatCurrency(b['amount'] / 100)}",
-              style: TextStyle(color: Color(0xFF00D4AA), fontWeight: FontWeight.w600, fontSize: 12),
-            ),
-          ),
-        );
+          );
       }
-    });
-
-    if (isSettled) {
-      w.add(
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 189, 255, 191),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text("Settled", style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 12)),
-        ),
-      );
     }
 
-    return w;
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text("Settled", style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 14)),
+      );
   }
 
 
@@ -243,8 +253,6 @@ List<Widget> balanceList(List<dynamic> balance, int groupIndex) {
     IconData icon,
     [int index = 0]
   ) {
-    final bool isSettled = status == 'Settled';
-    final bool isOwed = status.contains('owed');
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -320,7 +328,7 @@ List<Widget> balanceList(List<dynamic> balance, int groupIndex) {
                   ),
                 ],
               ),
-              Wrap(children: balanceList(balance,index))
+              balanceList(balance, index),
             ],
           ),
         ],

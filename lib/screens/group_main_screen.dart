@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:number_editing_controller/number_editing_controller.dart';
 import 'package:provider/provider.dart';
 
+
 class GroupMainScreen extends StatefulWidget {
   final int groupIndex;
 
@@ -24,6 +25,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
   var groupBalance = [];
   List<dynamic> members = [];
   dynamic you;
+  bool isPay = false;
 
   @override
   void initState() {
@@ -54,8 +56,127 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
     _loadNewExpenses();
   }
 
+  Widget _content(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF00D4AA).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.payments_sharp, color: Color(0xFF00D4AA), size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Total Spending',
+                        style: TextStyle(color: Color.fromARGB(255, 0, 56, 45), fontSize: 12),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        Globals.formatCurrency(
+                          Provider.of<UserData>(context).groupList[widget.groupIndex]["total"] / 100,
+                        ),
+                        style: const TextStyle(
+                          color: Color.fromARGB(255, 0, 56, 45),
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Divider(thickness: 0.6),
+
+  ShaderMask(
+  shaderCallback: (Rect rect) {
+    return const LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: [
+        Colors.transparent,
+        Colors.black,
+        Colors.black,
+        Colors.transparent,
+      ],
+      stops: [0.0, 0.08, 0.92, 1.0],
+    ).createShader(rect);
+  },
+  blendMode: BlendMode.dstIn,
+  child: SizedBox(
+    height: 45,
+    child: ListView.separated(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: groupBalance.length,
+      separatorBuilder: (_, __) => const SizedBox(),
+      itemBuilder: (_, i) { if(groupBalance[i]["debtor"] == you["id"] || groupBalance[i]["creditor"] == you["id"]) {return SizedBox();} else{return balanceCard(groupBalance[i]);}},
+
+    ),
+  ),
+),
+
+SizedBox(height:7),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children:[
+
+            SizedBox(
+              height: 42,
+              width:140,
+              child:
+                FloatingActionButton(
+                  backgroundColor: Colors.white70,
+                  child: const Text("Pay", style: TextStyle(color: Color.fromARGB(255, 0, 89, 71))),
+                  onPressed: (){
+                    setState(() {
+                      isPay = true;
+                    });
+                    //Navigator.push(context, MaterialPageRoute(builder: (context) => PayDebtScreen(balance: groupBalance, groupIndex: widget.groupIndex,)));
+                  },
+                ),
+            ),
+            SizedBox(width:40),
+            SizedBox(
+              height: 42,
+              width:140,
+              child:
+                FloatingActionButton(
+                  backgroundColor: Colors.white70,
+                  child: const Text("Waive", style: TextStyle(color: Color.fromARGB(255, 0, 89, 71))),
+                  onPressed: (){
+                    setState(() {
+                      isPay = true;
+                    });
+                    //Navigator.push(context, MaterialPageRoute(builder: (context) => WaiveScreen(balance: groupBalance, groupIndex: widget.groupIndex)));
+                  },
+                ),
+            )
+              ]
+            ),
+            //const SizedBox(height:20),
+          ],
+        ),
+        //...balanceList(groupBalance)
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height * 0.222;
     return Scaffold(
       //persistentFooterButtons: [BigAddButton(onPressed: _showAddExpenseDialog, height: 60)],
       backgroundColor: const Color(0xFFE8F9F5),
@@ -63,63 +184,85 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         backgroundColor: Color(0xFF00D4AA),
         elevation: 0,
         centerTitle: false,
-        automaticallyImplyLeading: false,
-        title: Text(
-          UserData().groupList[widget.groupIndex]['name'],
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
-        actions: [IconButton(icon: const Icon(Icons.search, color: Colors.white), onPressed: () {})],
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    UserData().groupList[widget.groupIndex]['name'],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.white),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    "${UserData().groupList[widget.groupIndex]['members'].length} members",
+                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
+                ],
+              ),
+            ),
+
+            /// Clickable group icon
+            InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () {
+                // Navigate to group info page
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Icon(Icons.group_add_outlined, color: Colors.white70),
+              ),
+            ),
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(
           children: [
-            // Progress Card
-            Container(
-              padding: const EdgeInsets.all(24),
+            //Progress Card
+            !isPay ? Container(
+              constraints: BoxConstraints(maxHeight: height),
+              width: double.infinity,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF00A885), Color(0xFF00D4AA)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(Icons.payments_sharp, color: Colors.white, size: 32),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Total Spending', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                            const SizedBox(height: 4),
-                            Text(
-                              Globals.formatCurrency(
-                                Provider.of<UserData>(context).groupList[widget.groupIndex]["total"] / 100,
-                              ),
-                              style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  Wrap(children:balanceList(groupBalance)),
-                  //const SizedBox(height:20),
+                color: Color.fromARGB(255, 240, 247, 245),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(color: Colors.black38, offset: Offset(0, 4), blurRadius: 6, spreadRadius: -4),
+                  BoxShadow(color: Colors.black38, offset: Offset(0, -4), blurRadius: 6, spreadRadius: -4),
+                  //BoxShadow(color: Color.fromARGB(255, 24, 255, 151).withOpacity(0.25), blurRadius: 16, spreadRadius: 1),
                 ],
+                border: Border.all(color: Color(0xFF00D4AA), width: 0.2),
               ),
+              padding: const EdgeInsets.all(16),
+              child: _content(context),
+            )
+            : Container(
+              constraints: BoxConstraints(maxHeight: height),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Color.fromARGB(255, 240, 247, 245),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(color: Colors.black38, offset: Offset(0, 4), blurRadius: 6, spreadRadius: -4),
+                  BoxShadow(color: Colors.black38, offset: Offset(0, -4), blurRadius: 6, spreadRadius: -4),
+                  //BoxShadow(color: Color.fromARGB(255, 24, 255, 151).withOpacity(0.25), blurRadius: 16, spreadRadius: 1),
+                ],
+                border: Border.all(color: Color(0xFF00D4AA), width: 0.2),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Text("CONTENT"),
             ),
 
             const SizedBox(height: 16),
@@ -134,16 +277,15 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
               ),
             ),
 
-            SizedBox(height:5),
+            SizedBox(height: 5),
             FloatingMessageInputBar(
-                groupIndex: widget.groupIndex,
-                controller: _messageController,
-                onSend: () {
-                  _loadNewExpenses();
-                },
-                buttonFunction: _showAddExpenseDialog,
-              )
-
+              groupIndex: widget.groupIndex,
+              controller: _messageController,
+              onSend: () {
+                _loadNewExpenses();
+              },
+              buttonFunction: _showAddExpenseDialog,
+            ),
           ],
         ),
       ),
@@ -161,7 +303,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
       });
       _loadNewExpenses();
     } catch (e) {
-      if(mounted)ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
@@ -188,7 +330,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         });
       }
     } catch (e) {
-      if(mounted)ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
@@ -216,125 +358,117 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         );
         lastDate = currentDate;
       }
-      if(prevId!=expense["creatorId"]){
-        widgets.add(SizedBox(height:16));
+      if (prevId != expense["creatorId"]) {
+        widgets.add(SizedBox(height: 16));
       }
-      widgets.add(_buildExpenseItem(expense, expense["creatorId"]==prevId));
+      widgets.add(_buildExpenseItem(expense, expense["creatorId"] == prevId));
       prevId = expense["creatorId"];
     }
 
     return widgets;
   }
 
-List<Widget> balanceList(List<dynamic> balance){
-  List<Widget> w = [];
-  var isSettled = true;
+  Widget balanceCard(dynamic b) {
+    List<Widget> w = [];
 
-  for (var b in balance) {
-    if(b["debtor"] == UserData().id){
-      isSettled = false;
-      w.add(Container(
-        margin: const EdgeInsets.all(10),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 255, 232, 198),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          "You Owe ${UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b['creditor'])} ${Globals.formatCurrency(b['amount']/100)}",
-          style: TextStyle(
-            color: Colors.orange,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-          ),
-        ),
-      ));
+      if (b["debtor"] == UserData().id) {
+        return SafeArea(
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 255, 190, 190),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        "${UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b['creditor'])}  |  ${Globals.formatCurrency(b['amount'] / 100)}   ",
+                        style: TextStyle(color: const Color.fromARGB(255, 255, 105, 94), fontWeight: FontWeight.w600, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              Divider(),
+              SizedBox(width: 12),
+              ],
+            ),
+          );
 
-    }else if(b["creditor"] == UserData().id){
-      isSettled = false;
-      w.add(Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        decoration: BoxDecoration(
-          color: Color.fromARGB(255, 171, 255, 238),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          "${UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b['debtor'])} Owes You ${Globals.formatCurrency(b['amount']/100)}",
-          style: TextStyle(
-          color: Color(0xFF00D4AA),
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-          ),
-        ),
-      ));
-    }
+      } else if (b["creditor"] == UserData().id) {
+        return InkWell(
+            onTap:(){},
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Color.fromARGB(255, 216, 255, 196),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        "${UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b['debtor'])}  |  ${Globals.formatCurrency(b['amount'] / 100)}  ",
+                        style: TextStyle(color: Color.fromARGB(255, 46, 212, 0), fontWeight: FontWeight.w600, fontSize: 12),
+                      ),
+                      Icon(Icons.notifications_none, size: 16, color: Color.fromARGB(255, 46, 212, 0)),
+                    ],
+                  ),
+                ),
+                Divider(),
+                SizedBox(width: 12),
+              ],
+            ),
+          );
+      }
+
+
+
+    return SizedBox();
   }
-
-  if(isSettled){
-      w.add(Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 189, 255, 191),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          "Settled",
-          style: TextStyle(
-          color: Colors.green,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
-          ),
-        ),
-      ));
-    }
-
-  return w;
-}
-
-
 
   Widget _buildExpenseItem(Map<String, dynamic> expense, bool link) {
     final formatter = DateFormat("HH:mm");
     DateTime dateTime = Globals.parseDateToLocal(expense["createdAt"]);
     String timeStr = formatter.format(dateTime);
 
-    return expense["isMessage"] ?
-        _regularBubble(
+    return expense["isMessage"]
+        ? _regularBubble(
           context,
           name: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["creatorId"]),
           content: expense["title"],
           isMe: expense["creatorId"] == you["userId"],
-          link: link
+          link: link,
         )
         : ExpenseMessageBubble2(
           creatorName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["creatorId"]),
           paidByName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["paidBy"]),
           title: expense["title"],
-          amount: Globals.formatCurrency(expense["amount"]/100),
-          isMe:expense["creatorId"]==you["userId"],
+          amount: Globals.formatCurrency(expense["amount"] / 100),
+          isMe: expense["creatorId"] == you["userId"],
           groupIndex: widget.groupIndex,
           splits: expense["splits"],
         );
   }
 }
 
-Widget _regularBubble(BuildContext context, {required String name, required String content, required bool isMe, required bool link}){
+Widget _regularBubble(
+  BuildContext context, {
+  required String name,
+  required String content,
+  required bool isMe,
+  required bool link,
+}) {
   final theme = Theme.of(context);
   return Align(
     alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
     child: Container(
       constraints: const BoxConstraints(maxWidth: 300),
       margin: EdgeInsets.symmetric(vertical: 2, horizontal: 12),
-      padding: link ? EdgeInsets.symmetric(vertical: 10, horizontal: 18) : EdgeInsets.symmetric(vertical: 6, horizontal: 18),
+      padding:
+          link ? EdgeInsets.symmetric(vertical: 10, horizontal: 18) : EdgeInsets.symmetric(vertical: 6, horizontal: 18),
       decoration: BoxDecoration(
         color: isMe ? theme.colorScheme.primary.withValues(alpha: 0.12) : Colors.white,
         borderRadius: BorderRadius.only(
@@ -346,10 +480,12 @@ Widget _regularBubble(BuildContext context, {required String name, required Stri
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children:[
-          isMe || link ? SizedBox(height: 0) : Text(name,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
-          isMe || link ? SizedBox(height:0) : SizedBox(width:name.length*5, height:7, child: Divider(thickness: 0.3,)),
-          Wrap(children:[Text(content, style: theme.textTheme.bodySmall)]),
+        children: [
+          isMe || link ? SizedBox(height: 0) : Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
+          isMe || link
+              ? SizedBox(height: 0)
+              : SizedBox(width: name.length * 5, height: 7, child: Divider(thickness: 0.3)),
+          Wrap(children: [Text(content, style: theme.textTheme.bodySmall)]),
         ],
       ),
     ),
@@ -414,7 +550,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
   final amountController = NumberEditingTextController.currency(currencyName: 'MYR', allowNegative: false);
   final formKey = GlobalKey<FormState>();
   final sliderController = SliderController(0);
-  final splitController = NumberEditingTextController.currency(value:0, currencyName: 'MYR', allowNegative: false);
+  final splitController = NumberEditingTextController.currency(value: 0, currencyName: 'MYR', allowNegative: false);
   final sliderControllers = [];
   final splitControllers = [];
   int amt = 0;
@@ -432,7 +568,9 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
       splitController.number = amount / 100;
     });
     names.add(UserData().id.toString());
-    for (var member in widget.members) {names.add(member['userId'].toString());}
+    for (var member in widget.members) {
+      names.add(member['userId'].toString());
+    }
     super.initState();
   }
 
@@ -441,7 +579,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
 
     for (int index = 0; index < widget.members.length; index++) {
       sliderControllers.add(SliderController(0));
-      splitControllers.add(NumberEditingTextController.currency(value:0, currencyName: 'MYR', allowNegative: false));
+      splitControllers.add(NumberEditingTextController.currency(value: 0, currencyName: 'MYR', allowNegative: false));
       amountController.addListener(() {
         final amount = ((amountController.number ?? 0) * 100).toDouble();
         sliderControllers[index].value = sliderControllers[index].value.clamp(0, amount);
@@ -454,7 +592,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
       var w = Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          SizedBox(height:16),
+          SizedBox(height: 16),
           //Divider(thickness: 1,),
           Row(
             children: [
@@ -464,7 +602,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                   max: amt.toDouble(),
                   divisions: 200,
                   controller: sliderControllers[index],
-                  validator: (v){
+                  validator: (v) {
                     return null;
                   },
                 ),
@@ -567,15 +705,15 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                   return null;
                 },
                 onChanged: (value) {
-                    setState(() {
-                      amt = ((amountController.number ?? 0) * 100).toInt();
-                    });
+                  setState(() {
+                    amt = ((amountController.number ?? 0) * 100).toInt();
+                  });
                 },
               ),
               SizedBox(height: 16),
               Divider(thickness: 1),
               const Text('Paid By', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),              
+              const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: selectedName,
                 decoration: const InputDecoration(
@@ -584,12 +722,16 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                   labelText: 'Select person',
                   border: OutlineInputBorder(),
                 ),
-                items: names.map((name) {
-                  return DropdownMenuItem<String>(
-                    value: name,
-                    child: name == UserData().id ? Text("You") : Text(widget.members.firstWhere((m)=>m["userId"]==name)["nameInGroup"]),
-                  );
-                }).toList(),
+                items:
+                    names.map((name) {
+                      return DropdownMenuItem<String>(
+                        value: name,
+                        child:
+                            name == UserData().id
+                                ? Text("You")
+                                : Text(widget.members.firstWhere((m) => m["userId"] == name)["nameInGroup"]),
+                      );
+                    }).toList(),
                 onChanged: (value) {
                   setState(() {
                     selectedName = value;
@@ -614,48 +756,54 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                       max: amt.toDouble(),
                       divisions: 200,
                       controller: sliderController,
-                      validator: (v){return null;},
+                      validator: (v) {
+                        return null;
+                      },
                     ),
                   ),
                 ],
               ),
-              Row(mainAxisAlignment: MainAxisAlignment.end, children:[
-                Focus(
-                onFocusChange: (hasFocus) {
-                  if (!hasFocus) {
-                    splitController.number = (splitController.number ?? 0).clamp(0, amt / 100);
-                    setState(() {
-                      sliderController.value = ((splitController.number ?? 0) * 100).toDouble();
-                    });
-                  }
-                },
-                child: SizedBox(
-                  width: 120,
-                  child: TextFormField(
-                    controller: splitController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      fillColor: Colors.white,
-                      filled: true,
-                      isCollapsed: true,
-                      contentPadding: EdgeInsets.all(12),
-                      hintText: 'RM 0.00',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(6),
-                        borderSide: const BorderSide(color: Color(0xFF00D4AA)),
-                        gapPadding: 2,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Focus(
+                    onFocusChange: (hasFocus) {
+                      if (!hasFocus) {
+                        splitController.number = (splitController.number ?? 0).clamp(0, amt / 100);
+                        setState(() {
+                          sliderController.value = ((splitController.number ?? 0) * 100).toDouble();
+                        });
+                      }
+                    },
+                    child: SizedBox(
+                      width: 120,
+                      child: TextFormField(
+                        controller: splitController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: InputDecoration(
+                          fillColor: Colors.white,
+                          filled: true,
+                          isCollapsed: true,
+                          contentPadding: EdgeInsets.all(12),
+                          hintText: 'RM 0.00',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: const BorderSide(color: Color(0xFF00D4AA)),
+                            gapPadding: 2,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Amount can\'t be empty';
+                          }
+                          return null;
+                        },
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Amount can\'t be empty';
-                      }
-                      return null;
-                    },
                   ),
-                ),
-              ),]),
+                ],
+              ),
               Column(children: _buildExpenseSplit()),
               const SizedBox(height: 8),
               Divider(thickness: 1),
@@ -691,12 +839,12 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
             splitController.clear();
             Navigator.pop(context);
           },
-          child: const Text('Cancel', style:TextStyle(fontWeight: FontWeight.bold)),
+          child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
         ),
         FloatingActionButton(
           backgroundColor: const Color(0xFF00D4AA),
           child: const Icon(Icons.add, color: Colors.white),
-          onPressed: () async{
+          onPressed: () async {
             FocusScope.of(context).unfocus();
             await Future<void>.delayed(Duration.zero);
             if (formKey.currentState!.validate()) {
@@ -704,22 +852,24 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               var amt = (num * 100).toInt();
               var amts = [];
               var n = splitController.number ?? 0;
-              amts.add((n*100).toInt());
-              splitControllers.forEach((sc){
+              amts.add((n * 100).toInt());
+              splitControllers.forEach((sc) {
                 var n = sc.number ?? 0;
-                amts.add((n*100).toInt());
+                amts.add((n * 100).toInt());
               });
-              var splits = [{"userId": UserData().id, "share": amts[0]}];
-              for(var i = 0; i < widget.members.length; i++){
-                if(amts[i + 1] == 0)continue;
-                splits.add({"userId":widget.members[i]["userId"], "share":amts[i+1]});
+              var splits = [
+                {"userId": UserData().id, "share": amts[0]},
+              ];
+              for (var i = 0; i < widget.members.length; i++) {
+                if (amts[i + 1] == 0) continue;
+                splits.add({"userId": widget.members[i]["userId"], "share": amts[i + 1]});
               }
               final String body = jsonEncode({
                 "groupId": UserData().groupList[widget.groupIndex]["groupId"],
                 "title": titleController.text.trim(),
                 "amount": amt,
                 "paidBy": selectedName,
-                "splits":splits,
+                "splits": splits,
               });
 
               try {
@@ -741,12 +891,11 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               }
             }
           },
-        )
+        ),
       ],
     );
   }
 }
-
 
 class ExpenseMessageBubble2 extends StatelessWidget {
   final String creatorName;
@@ -781,9 +930,7 @@ class ExpenseMessageBubble2 extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isMe
-              ? theme.colorScheme.primary.withValues(alpha: 0.12)
-              : Colors.white,
+          color: isMe ? theme.colorScheme.primary.withValues(alpha: 0.12) : Colors.white,
           borderRadius: BorderRadius.only(
             topRight: const Radius.circular(20),
             bottomLeft: const Radius.circular(20),
@@ -796,10 +943,8 @@ class ExpenseMessageBubble2 extends StatelessWidget {
           children: [
             /// Creator / payer info (low emphasis)
             Text(
-              isMe ? 'Paid by $paidByName' :'$creatorName • Paid by $paidByName',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+              isMe ? 'Paid by $paidByName' : '$creatorName • Paid by $paidByName',
+              style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
 
             const SizedBox(height: 8),
@@ -808,14 +953,7 @@ class ExpenseMessageBubble2 extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+                Expanded(child: Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600))),
                 const SizedBox(width: 8),
                 Text(
                   amount,
@@ -829,17 +967,10 @@ class ExpenseMessageBubble2 extends StatelessWidget {
 
             if (description != null && description!.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(
-                description!,
-                style: theme.textTheme.bodySmall,
-              ),
+              Text(description!, style: theme.textTheme.bodySmall),
             ],
 
-            SharePreviewList(
-              groupIndex: groupIndex,
-              shares: splits,
-              previewCount: 2,
-            ),
+            SharePreviewList(groupIndex: groupIndex, shares: splits, previewCount: 2),
           ],
         ),
       ),
@@ -852,12 +983,7 @@ class SharePreviewList extends StatefulWidget {
   final int previewCount;
   final int groupIndex;
 
-  const SharePreviewList({
-    super.key,
-    required this.shares,
-    this.previewCount = 2,
-    required this.groupIndex,
-  });
+  const SharePreviewList({super.key, required this.shares, this.previewCount = 2, required this.groupIndex});
 
   @override
   State<SharePreviewList> createState() => _SharePreviewListState();
@@ -870,9 +996,7 @@ class _SharePreviewListState extends State<SharePreviewList> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final total = widget.shares.length;
-    final visibleCount = _expanded
-        ? total
-        : total.clamp(0, widget.previewCount);
+    final visibleCount = _expanded ? total : total.clamp(0, widget.previewCount);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -890,10 +1014,8 @@ class _SharePreviewListState extends State<SharePreviewList> {
                   ),
                 ),
                 Text(
-                  Globals.formatCurrency(item['share']/100),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  Globals.formatCurrency(item['share'] / 100),
+                  style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -906,9 +1028,7 @@ class _SharePreviewListState extends State<SharePreviewList> {
             child: Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                _expanded
-                    ? 'Show less'
-                    : '+ ${total - widget.previewCount} more',
+                _expanded ? 'Show less' : '+ ${total - widget.previewCount} more',
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.primary,
                   fontWeight: FontWeight.w600,
@@ -920,8 +1040,6 @@ class _SharePreviewListState extends State<SharePreviewList> {
     );
   }
 }
-
-
 
 class FloatingMessageInputBar extends StatelessWidget {
   final TextEditingController controller;
@@ -948,7 +1066,9 @@ class FloatingMessageInputBar extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 16, offset: const Offset(0, 6))],
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 16, offset: const Offset(0, 6)),
+            ],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -972,20 +1092,19 @@ class FloatingMessageInputBar extends StatelessWidget {
                     suffixIcon: IconButton(
                       iconSize: 20,
                       icon: const Icon(Icons.send_sharp),
-                      onPressed: ()async{
+                      onPressed: () async {
                         final String body = jsonEncode({
                           "groupId": UserData().groupList[groupIndex]["groupId"],
                           "title": controller.text.trim(),
-                          "isMessage":true
+                          "isMessage": true,
                         });
                         try {
                           await Api.createExpense(body, UserData().groupList[groupIndex]["groupId"]);
                           onSend();
                           controller.clear();
                         } catch (e) {
-                          ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text('Error: $e')));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
                         }
-                        
                       },
                       tooltip: 'Send Message',
                     ),
@@ -997,7 +1116,7 @@ class FloatingMessageInputBar extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(width:18),
+              SizedBox(width: 18),
               FloatingActionButton(
                 onPressed: buttonFunction,
                 backgroundColor: const Color(0xFF00D4AA),
@@ -1010,4 +1129,3 @@ class FloatingMessageInputBar extends StatelessWidget {
     );
   }
 }
-
