@@ -1,7 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/screens/notification_screen.dart';
+import 'package:fyp_tallypath/user_data.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class MainHomeScreen extends StatefulWidget {
@@ -12,7 +14,19 @@ class MainHomeScreen extends StatefulWidget {
 }
 
 class _MainHomeScreenState extends State<MainHomeScreen> {
-  final Map<String, num> rawData = {"May": 10, "Jun": 53, "July": 61};
+  num totalDebt = 0;
+  num totalLent = 0;
+
+  @override
+  void initState() {
+    for (var groupBalance in UserData().balanceList) {
+      for (var balance in groupBalance) {
+        if (balance["debtor"] == UserData().id) totalDebt += balance["amount"];
+        if (balance["creditor"] == UserData().id) totalLent += balance["amount"];
+      }
+    }
+    super.initState();
+  }
 
 
   @override
@@ -27,14 +41,30 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
             SalesData(DateTime(2010, 1, 29), 90),
             SalesData(DateTime(2010, 1, 30), 7060),
             SalesData(DateTime(2010, 1, 31), 100),
-            SalesData(DateTime(2010, 2, 1), 920),
-            SalesData(DateTime(2010, 2, 2), 4080),
+            // SalesData(DateTime(2010, 2, 1), 920),
+            // SalesData(DateTime(2010, 2, 2), 4080),
             // SalesData(DateTime(2010, 2, 3), 0),
-            // SalesData(DateTime(2010, 2, 4), 0),
+            // SalesData(DateTime(2010, 2, 4), 1240),
             // SalesData(DateTime(2010, 2, 5), 0),
-            // SalesData(DateTime(2010, 2, 6), 0),
+            // SalesData(DateTime(2010, 2, 6), 200),
             // SalesData(DateTime(2010, 2, 7), 0),
             // SalesData(DateTime(2010, 2, 8), 0),
+            // SalesData(DateTime(2010, 2, 9), 0),
+            // SalesData(DateTime(2010, 2, 10), 0),
+            // SalesData(DateTime(2010, 2, 11), 0),
+            // SalesData(DateTime(2010, 2, 12), 0),
+            // SalesData(DateTime(2010, 2, 13), 0),
+            // SalesData(DateTime(2010, 2, 14), 0),
+            // SalesData(DateTime(2010, 2, 15), 0),
+            // SalesData(DateTime(2010, 2, 16), 100),
+            // SalesData(DateTime(2010, 2, 17), 0),
+            // SalesData(DateTime(2010, 2, 18), 0),
+            // SalesData(DateTime(2010, 2, 19), 0),
+            // SalesData(DateTime(2010, 2, 20), 312.5),
+            // SalesData(DateTime(2010, 2, 21), 0),
+            // SalesData(DateTime(2010, 2, 22), 0),
+            // SalesData(DateTime(2010, 2, 23), 0),
+            // SalesData(DateTime(2010, 2, 24), 1234),
 
         ];
 
@@ -93,7 +123,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                   Expanded(
                     child: _buildSummaryCard(
                       'Total Lent',
-                      'RM 1,234.00',
+                      Globals.formatCurrency(totalLent.toDouble()/100),
                       const Color(0xFF00D4AA),
                       Icons.arrow_upward,
                     ),
@@ -102,7 +132,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                   Expanded(
                     child: _buildSummaryCard(
                       'Total Borrowed',
-                      'RM 567.00',
+                      Globals.formatCurrency(totalDebt.toDouble()/100),
                       Colors.red,
                       Icons.arrow_downward,
                     ),

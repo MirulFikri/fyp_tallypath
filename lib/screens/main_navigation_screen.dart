@@ -31,8 +31,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   void initState(){
-    super.initState();
     UserData().updateGroupList();
+    super.initState();
   }
 
   @override
