@@ -186,5 +186,30 @@ class Api{
       rethrow;
     }
   }
+  static Future<List<dynamic>> getDailySpending() async {
+    final url = Uri.parse("${Globals.baseUrl}/api/expenses/total/daily");
+    String? startOfDay = Globals.parseDateToUtc(DateTime(DateTime.now().year, DateTime.now().month,DateTime.now().day,));
+    String body = """
+        {
+          "startOfDayUtc":"$startOfDay"
+        }
+      """;
+    try {
+      final res = await authClient.post(
+        url,
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
+        body: body,
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return data;
+      } else {
+        throw ("Code ${res.statusCode}: ${res.body}");
+      }
+    } catch (e) {
+      rethrow;
+    } 
+  }
 
 }

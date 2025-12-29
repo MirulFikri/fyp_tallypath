@@ -467,10 +467,14 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
             if (formKey.currentState!.validate()) {
               var num = amountController.number ?? 0;
               var amt = (num * 100).toInt();
+              var splits = [
+                {"userId": UserData().id, "share": amt},
+              ];
               final String body = jsonEncode({
                 "groupId": UserData().groupList[widget.groupIndex]["groupId"],
                 "title": titleController.text.trim(),
                 "amount": amt,
+                "splits":splits,
               });
 
               try {

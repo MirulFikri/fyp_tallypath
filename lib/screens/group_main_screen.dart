@@ -138,6 +138,7 @@ SizedBox(height:7),
               width:140,
               child:
                 FloatingActionButton(
+                  heroTag: null,
                   backgroundColor: Colors.white70,
                   child: const Text("Pay", style: TextStyle(color: Color.fromARGB(255, 0, 89, 71))),
                   onPressed: (){
@@ -154,6 +155,7 @@ SizedBox(height:7),
               width:140,
               child:
                 FloatingActionButton(
+                  heroTag: null,
                   backgroundColor: Colors.white70,
                   child: const Text("Waive", style: TextStyle(color: Color.fromARGB(255, 0, 89, 71))),
                   onPressed: (){
@@ -842,6 +844,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
           child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
         ),
         FloatingActionButton(
+          heroTag: null,
           backgroundColor: const Color(0xFF00D4AA),
           child: const Icon(Icons.add, color: Colors.white),
           onPressed: () async {

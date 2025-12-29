@@ -1,9 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/screens/notification_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
+import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class MainHomeScreen extends StatefulWidget {
@@ -16,6 +18,7 @@ class MainHomeScreen extends StatefulWidget {
 class _MainHomeScreenState extends State<MainHomeScreen> {
   num totalDebt = 0;
   num totalLent = 0;
+  List<SalesData> spendingData = [];
 
   @override
   void initState() {
@@ -25,65 +28,36 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
         if (balance["creditor"] == UserData().id) totalLent += balance["amount"];
       }
     }
+
+    _loadChart();
+    
     super.initState();
+  }
+
+  void _loadChart() async {
+    List<dynamic> sdlist = await Api.getDailySpending();
+    List<SalesData> sd = [];
+    var cur = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    int index = sdlist.length - 1;
+    for(int day = 0; day < 30; day++){
+      if(Globals.parseDateToLocal(sdlist[index]["date"]).compareTo(cur) != 0){
+      sd.add(SalesData(cur, 0));
+      }else{
+        sd.add(SalesData(cur, sdlist[index]["amount"]/100 ));
+        if(index>0) index-=1;
+      }
+      cur = cur.subtract(const Duration(days:1));
+    }
+    setState((){
+      spendingData = sd;
+    });
+
   }
 
 
   @override
   Widget build(BuildContext context) {
-        final List<SalesData> chartData = [
-            // SalesData(DateTime(2010, 1, 23), 0),
-            // SalesData(DateTime(2010, 1, 24), 0),
-            SalesData(DateTime(2010, 1, 25), 0),
-            SalesData(DateTime(2010, 1, 26), 110),
-            SalesData(DateTime(2010, 1, 27), 3210),
-            SalesData(DateTime(2010, 1, 28), 40),
-            SalesData(DateTime(2010, 1, 29), 90),
-            SalesData(DateTime(2010, 1, 30), 7060),
-            SalesData(DateTime(2010, 1, 31), 100),
-            // SalesData(DateTime(2010, 2, 1), 920),
-            // SalesData(DateTime(2010, 2, 2), 4080),
-            // SalesData(DateTime(2010, 2, 3), 0),
-            // SalesData(DateTime(2010, 2, 4), 1240),
-            // SalesData(DateTime(2010, 2, 5), 0),
-            // SalesData(DateTime(2010, 2, 6), 200),
-            // SalesData(DateTime(2010, 2, 7), 0),
-            // SalesData(DateTime(2010, 2, 8), 0),
-            // SalesData(DateTime(2010, 2, 9), 0),
-            // SalesData(DateTime(2010, 2, 10), 0),
-            // SalesData(DateTime(2010, 2, 11), 0),
-            // SalesData(DateTime(2010, 2, 12), 0),
-            // SalesData(DateTime(2010, 2, 13), 0),
-            // SalesData(DateTime(2010, 2, 14), 0),
-            // SalesData(DateTime(2010, 2, 15), 0),
-            // SalesData(DateTime(2010, 2, 16), 100),
-            // SalesData(DateTime(2010, 2, 17), 0),
-            // SalesData(DateTime(2010, 2, 18), 0),
-            // SalesData(DateTime(2010, 2, 19), 0),
-            // SalesData(DateTime(2010, 2, 20), 312.5),
-            // SalesData(DateTime(2010, 2, 21), 0),
-            // SalesData(DateTime(2010, 2, 22), 0),
-            // SalesData(DateTime(2010, 2, 23), 0),
-            // SalesData(DateTime(2010, 2, 24), 1234),
-
-        ];
-
-
-
-    // final List<SalesData> chartData = [
-    //     SalesData(DateTime(2010, 3), 0),
-    //     SalesData(DateTime(2010, 4), 0),
-    //     SalesData(DateTime(2010, 5), 402),
-    //     SalesData(DateTime(2010, 6), 40),
-    //     SalesData(DateTime(2010, 7), 40),
-    //     SalesData(DateTime(2010, 8), 60),
-    //     SalesData(DateTime(2010, 9), 40),
-    //     SalesData(DateTime(2010, 10), 310),
-    //     SalesData(DateTime(2010, 11), 210),
-    //     SalesData(DateTime(2010, 12), 10),
-    //     SalesData(DateTime(2011, 1), 110),
-    //     SalesData(DateTime(2011, 2), 210),
-    // ];
+    final DateFormat formatter = DateFormat('MMM dd');
     return Scaffold(
       backgroundColor: const Color(0xFFE8F9F5),
       appBar: AppBar(
@@ -153,7 +127,15 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('Spending Trend', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        Icon(Icons.calendar_today_outlined),
+                        SizedBox(width: 40,),
+                        Column(children:[
+                          Text('Today, ${spendingData.isEmpty?"-":formatter.format(spendingData.first.year)}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                          Text('This Month', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                        ]),
+                        Column(children:[
+                          Text(spendingData.isEmpty?"-":Globals.formatCurrency(spendingData.first.sales), style: TextStyle(fontSize: 10, fontWeight: FontWeight.normal)),
+                          Text(spendingData.isEmpty?"-":Globals.formatCurrency(spendingData.fold<double>(0, (sum, item)=>sum + item.sales)), style: TextStyle(fontSize: 10, fontWeight: FontWeight.normal)),
+                        ])
                       ],
                     ),
                     const SizedBox(height: 5),
@@ -162,11 +144,15 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                     SizedBox(
                       height: 200,
                       child: SfCartesianChart(
-                        primaryXAxis: DateTimeAxis(),
+                        margin: EdgeInsets.all(5),
+                        backgroundColor: Color.fromARGB(255, 250, 255, 254),
+                        primaryXAxis: DateTimeAxis(minorTicksPerInterval: 4,dateFormat: DateFormat('MM/d'), desiredIntervals: 5),
+                        primaryYAxis: NumericAxis(numberFormat: NumberFormat('0', 'en_US'), minorTicksPerInterval: 1,),
                         series: <CartesianSeries>[
                           // Renders line chart
                           LineSeries<SalesData, DateTime>(
-                            dataSource: chartData,
+                            dashArray: <double>[3, 3],
+                            dataSource: spendingData,
                             xValueMapper: (SalesData sales, _) => sales.year,
                             yValueMapper: (SalesData sales, _) => sales.sales,
                           ),
@@ -192,7 +178,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                   ),
                   TextButton(
                     onPressed: () {},
-                    child: const Text('See All'),
+                    child: Icon(Icons.filter_alt_sharp, color: Color(0xFF00D4AA),size: 25),
                   ),
                 ],
               ),
