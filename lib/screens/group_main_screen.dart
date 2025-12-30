@@ -178,7 +178,8 @@ SizedBox(height:7),
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height * 0.222;
+    //final height = MediaQuery.of(context).size.height * 0.222;
+    final widthEighty = MediaQuery.of(context).size.width * 0.8;
     return Scaffold(
       //persistentFooterButtons: [BigAddButton(onPressed: _showAddExpenseDialog, height: 60)],
       backgroundColor: const Color(0xFFE8F9F5),
@@ -235,7 +236,7 @@ SizedBox(height:7),
           children: [
             //Progress Card
             !isPay ? Container(
-              constraints: BoxConstraints(maxHeight: height),
+              constraints: BoxConstraints(),
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Color.fromARGB(255, 240, 247, 245),
@@ -251,7 +252,7 @@ SizedBox(height:7),
               child: _content(context),
             )
             : Container(
-              constraints: BoxConstraints(maxHeight: height),
+              constraints: BoxConstraints(),
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Color.fromARGB(255, 240, 247, 245),
@@ -278,6 +279,8 @@ SizedBox(height:7),
                 ),
               ),
             ),
+
+            //TransactionCard(context, title: "Payment@Cash", payer: "You", receiver: "John", amount: 431.21, time: "12:12"),
 
             SizedBox(height: 5),
             FloatingMessageInputBar(
@@ -432,7 +435,7 @@ SizedBox(height:7),
   }
 
   Widget _buildExpenseItem(Map<String, dynamic> expense, bool link) {
-    final formatter = DateFormat("HH:mm");
+    final formatter = DateFormat("H:mm");
     DateTime dateTime = Globals.parseDateToLocal(expense["createdAt"]);
     String timeStr = formatter.format(dateTime);
 
@@ -443,27 +446,48 @@ SizedBox(height:7),
           content: expense["title"],
           isMe: expense["creatorId"] == you["userId"],
           link: link,
-        )
-        : ExpenseMessageBubble2(
-          creatorName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["creatorId"]),
-          paidByName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["paidBy"]),
-          title: expense["title"],
-          amount: Globals.formatCurrency(expense["amount"] / 100),
-          isMe: expense["creatorId"] == you["userId"],
-          groupIndex: widget.groupIndex,
-          splits: expense["splits"],
-        );
+          time: timeStr
+        ) : expense["isStatement"]??false
+            ? TransactionCard(
+              context,
+              title: "Payment@Cash",
+              payer: "You",
+              receiver: "John",
+              amount: 55.98,
+              time: timeStr
+            ) : ExpenseMessageBubble2(
+              creatorName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["creatorId"]),
+              paidByName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["paidBy"]),
+              title: expense["title"],
+              amount: Globals.formatCurrency(expense["amount"] / 100),
+              isMe: expense["creatorId"] == you["userId"],
+              groupIndex: widget.groupIndex,
+              splits: expense["splits"],
+              time: timeStr
+            );
   }
+}
+
+bool willTextWrap(BuildContext context, {required String text, required TextStyle style, required double maxWidth, int maxLines = 1}) {
+  final textPainter = TextPainter(
+    text: TextSpan(text: text, style: style),
+    maxLines: maxLines,
+    textDirection:Directionality.of(context),
+  )..layout(maxWidth: maxWidth);
+
+  return textPainter.didExceedMaxLines;
 }
 
 Widget _regularBubble(
   BuildContext context, {
   required String name,
   required String content,
+  required String time,
   required bool isMe,
   required bool link,
 }) {
   final theme = Theme.of(context);
+  final long = willTextWrap(context, text: content, style: theme.textTheme.bodyMedium!, maxWidth: 300);
   return Align(
     alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
     child: Container(
@@ -487,7 +511,12 @@ Widget _regularBubble(
           isMe || link
               ? SizedBox(height: 0)
               : SizedBox(width: name.length * 5, height: 7, child: Divider(thickness: 0.3)),
-          Wrap(children: [Text(content, style: theme.textTheme.bodySmall)]),
+          SizedBox(height:2),
+          Wrap(children: [
+            Text(content, style: theme.textTheme.bodyMedium,),
+            if(!long)Text("\n  $time", style:TextStyle(color: Colors.grey[500], fontSize: 9),)
+          ]),
+            if(long) Align(alignment: Alignment.bottomRight,child: Text(time, style:TextStyle(color: Colors.grey[500], fontSize: 9), softWrap: false,)),
         ],
       ),
     ),
@@ -909,6 +938,7 @@ class ExpenseMessageBubble2 extends StatelessWidget {
   final String? description;
   final bool isMe;
   final List<dynamic> splits;
+  final String time;
 
   const ExpenseMessageBubble2({
     super.key,
@@ -918,6 +948,7 @@ class ExpenseMessageBubble2 extends StatelessWidget {
     required this.amount,
     required this.groupIndex,
     required this.splits,
+    required this.time,
     this.description,
     this.isMe = false,
   });
@@ -974,6 +1005,12 @@ class ExpenseMessageBubble2 extends StatelessWidget {
             ],
 
             SharePreviewList(groupIndex: groupIndex, shares: splits, previewCount: 2),
+
+            SizedBox(height:10),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Text(time, style: TextStyle(color: Colors.grey[500], fontSize: 9)),
+            ),
           ],
         ),
       ),
@@ -1132,3 +1169,88 @@ class FloatingMessageInputBar extends StatelessWidget {
     );
   }
 }
+
+class TransactionCard extends StatelessWidget {
+  final String title;
+  final String payer;
+  final String receiver;
+  final double amount;
+  final String time;
+
+  const TransactionCard(BuildContext context,{
+    super.key,
+    required this.title,
+    required this.payer,
+    required this.receiver,
+    required this.amount,
+    required this.time,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width * 0.8;
+    return SizedBox(width:width<600 ? width:600, child: Card(
+      color: Colors.white,
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+              // Title
+              title.split('@')[0] == "Payment" ?
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(title.split('@')[0], style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[800])),
+                  Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(4)),color: Color.fromARGB(255, 240, 247, 245), border: Border.all(width:0.5)),
+                    child: Text(title.split('@')[1], style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey[800])),
+                  )
+                ],
+              ): Align(
+                alignment: Alignment.centerLeft,
+                child: Text(title.split('@')[0], style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[800])),
+              ),
+
+            Divider(),
+            // Payer → Receiver Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Names and Arrow
+                    Text(payer, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    const SizedBox(width: 16),
+                    // Stylized Arrow
+                    Icon(
+                      title.split('@')[0] == "Payment" ? Icons.arrow_forward_rounded : Icons.handshake_outlined,
+                      size: 30,
+                      color: Colors.grey[600],
+                    ),
+                    const SizedBox(width: 16),
+                    Text(receiver, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                // Amount
+              ],
+            ),
+              Text(
+              "\$${amount.toStringAsFixed(2)}",
+                style: TextStyle(
+                  fontSize:16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF00D4AA),
+                )),
+            // Time
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(time, style: TextStyle(color: Colors.grey[600], fontSize: 10)),
+              ),
+          ],
+        ),
+      ),
+    ));
+  }
+}
+
