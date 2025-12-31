@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
+import 'package:fyp_tallypath/screens/group_info_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:intl/intl.dart';
 import 'package:number_editing_controller/number_editing_controller.dart';
@@ -282,10 +283,7 @@ SizedBox(height:7),
 
   @override
   Widget build(BuildContext context) {
-    //final height = MediaQuery.of(context).size.height * 0.222;
-    final widthEighty = MediaQuery.of(context).size.width * 0.8;
     return Scaffold(
-      //persistentFooterButtons: [BigAddButton(onPressed: _showAddExpenseDialog, height: 60)],
       backgroundColor: const Color(0xFFE8F9F5),
       appBar: AppBar(
         backgroundColor: Color(0xFF00D4AA),
@@ -324,7 +322,7 @@ SizedBox(height:7),
             InkWell(
               borderRadius: BorderRadius.circular(20),
               onTap: () {
-                // Navigate to group info page
+                Navigator.push(context, MaterialPageRoute(builder:(context) => GroupInfoScreen(groupId: UserData().groupList[widget.groupIndex]["groupId"])));
               },
               child: Padding(
                 padding: const EdgeInsets.all(12.0),

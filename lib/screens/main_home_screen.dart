@@ -95,50 +95,50 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: const Color(0xFFD4F4ED),
-                child: const Icon(Icons.person, size: 24, color: Color(0xFF00D4AA)),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    UserData().fullname ?? 'loading..',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: const Color(0xFFD4F4ED),
+                          child: const Icon(Icons.person, size: 24, color: Color(0xFF00D4AA)),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              UserData().fullname ?? 'loading..',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              "( ${UserData().username ?? 'loading..'} ) ${UserData().email ?? 'loading..'}",
+                              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                            ),
+                          ]
+                        ),
+                        Expanded(child:SizedBox()),
+                        InkWell(
+                          child:Icon(Icons.payment,color: Colors.grey[700]),
+                          onTap:(){
+                            print("TEST");
+                          }
+                        )
+                      ],
                     ),
-                  ),
-                  Text(
-                    "( ${UserData().username ?? 'loading..'} ) ${UserData().email ?? 'loading..'}",
-                    style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                  ),
-                ]
+                  ],
+                ),
               ),
-              Expanded(child:SizedBox()),
-              InkWell(
-                child:Icon(Icons.payment,color: Colors.grey[700]),
-                onTap:(){
-                  print("TEST");
-                }
-              )
-            ],
-          ),
-        ],
-      ),
-    ),
 
               SizedBox(height:14),
               Row(

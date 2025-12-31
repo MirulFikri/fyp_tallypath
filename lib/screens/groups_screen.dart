@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
+import 'package:fyp_tallypath/screens/group_info_screen.dart';
 import 'package:fyp_tallypath/screens/group_main_screen.dart';
 import 'package:fyp_tallypath/screens/personal_spending_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
@@ -398,34 +399,6 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
 
             const SizedBox(height: 16),
 
-            // Search people
-            TextField(
-              decoration: InputDecoration(
-                labelText: "Search people to invite",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            Container(
-              height: 100,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Center(
-                child: Text(
-                  "Search results appear here",
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
             // Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -476,88 +449,10 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
             setState(() {
               UserData().updateGroupList();
             });
+              await UserData().updateGroupList();
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Successfully created group!")));
               Navigator.pop(context);
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return Dialog(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      width: 400,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "${data["name"]} - INVITE CODE",
-                            style: Theme.of(context).textTheme.titleLarge,
-                            softWrap: true,
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Flexible(
-                                child: SelectableText(data["inviteCode"], style: const TextStyle(fontSize: 14)),
-                              ),
-                              const SizedBox(width: 12),
-                              IconButton(
-                                icon: const Icon(Icons.copy),
-                                tooltip: "Copy to clipboard",
-                                onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: data["inviteCode"]));
-                                  ScaffoldMessenger.of(
-                                    context,
-                                  ).showSnackBar(const SnackBar(content: Text("Code copied!")));
-                                },
-                              ),
-                            ],
-                          ),
-                        
-                          const SizedBox(height: 20),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.link), 
-                              SizedBox(width:4),
-                              Flexible(
-                                child: SelectableText(data["deepLink"], style: const TextStyle(fontSize: 12)),
-                              ),
-                              const SizedBox(width: 12),
-                              IconButton(
-                                icon: const Icon(Icons.copy),
-                                tooltip: "Copy to clipboard",
-                                onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: data["deepLink"]));
-                                  ScaffoldMessenger.of(
-                                    context,
-                                  ).showSnackBar(const SnackBar(content: Text("Link copied!")));
-                                },
-                              ),
-                            ],
-                          ),
-                        
-
-                          const SizedBox(height: 30),
-
-                          // Close button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("Close"),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => GroupInfoScreen(groupId: data["id"])));
             }
           }
       } else {
@@ -636,7 +531,7 @@ class _JoinGroupDialogState extends State<JoinGroupDialog> {
                 ElevatedButton(
                   onPressed: () {
                     if(_formKey.currentState!.validate()){
-                     _joinGroup();
+                      _joinGroup();
                     }
                   },
                   child: _isLoading ? const CircularProgressIndicator() : const Text('Join'),
@@ -666,30 +561,12 @@ class _JoinGroupDialogState extends State<JoinGroupDialog> {
       if (res.statusCode == 200) {
           final data = jsonDecode(res.body);
           if (data != null) {
-            debugPrint("response : ${data.toString()}");
             if (mounted) {
+              await UserData().updateGroupList();
               setState((){UserData().updateGroupList();});
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Successfully joined group!")));
               Navigator.pop(context);
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return Dialog(
-                    shape: RoundedRectangleBorder(),
-                    child: Column(
-                      children: [
-                        SizedBox(height:20),
-                        Text(data["message"]),
-                        SizedBox(height:20),
-                        Text("Group ID : ${data["groupId"]}"),
-                        SizedBox(height:20),
-                        Text("Group Name: ${data["groupName"]}"),
-                        ElevatedButton(onPressed:(){Navigator.pop(context);}, child: Text("Close"))
-                      ]
-                    )
-                  );
-                },
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => GroupInfoScreen(groupId: data["groupId"])));
             }
           }
       } else {
