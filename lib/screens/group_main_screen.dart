@@ -26,6 +26,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
   List<dynamic> members = [];
   dynamic you;
   bool isPay = false;
+  int totalBalance = 0;
 
   @override
   void initState() {
@@ -54,6 +55,109 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
       },
     );
     _loadNewExpenses();
+  }
+
+  Widget _payContent(BuildContext context) {
+    return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.monetization_on, color: Colors.greenAccent, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Amount Lent',
+                        style: TextStyle(color: Color.fromARGB(255, 0, 56, 45), fontSize: 12),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        Globals.formatCurrency(
+                          totalBalance/100
+                        ),
+                        style: const TextStyle(
+                          color: Colors.greenAccent,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                VerticalDivider(thickness: 1),
+                SizedBox(height: 140,child: SingleChildScrollView(
+                  child:Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children:[...cardBuilder(context)]
+                  )
+                ))
+              ],
+            ),
+            
+          ],
+    );
+  }
+
+  List<Widget> cardBuilder(BuildContext context){
+    List<Widget> w = [];
+    for(var b in groupBalance){
+      if (b["debtor"] == UserData().id) {
+          w.add(Card(
+      color: Colors.white70,
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      child: Padding(
+        padding: const EdgeInsets.all(6.0),
+        child: InkWell(
+            onTap:(){
+              print("Test");
+            },
+            child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Payer → Receiver Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // // Names and Arrow
+                //     Text("You", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                //     const SizedBox(width: 16),
+                //     // Stylized Arrow
+                //     Icon(
+                //       Icons.arrow_forward_rounded,
+                //       size: 2,
+                //       color: Colors.grey[600],
+                //     ),
+                //     const SizedBox(width: 16),
+                    Text(UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b["creditor"]), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                // Amount
+              ],
+            ),
+              Text(
+                Globals.formatCurrency(b["amount"]/100),
+                style: TextStyle(
+                  fontSize:16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF00D4AA),
+                )),
+          ],
+        )),
+      ),
+    ));
+      }
+    }
+    return w;
   }
 
   Widget _content(BuildContext context) {
@@ -165,7 +269,7 @@ SizedBox(height:7),
                     //Navigator.push(context, MaterialPageRoute(builder: (context) => WaiveScreen(balance: groupBalance, groupIndex: widget.groupIndex)));
                   },
                 ),
-            )
+            ),
               ]
             ),
             //const SizedBox(height:20),
@@ -265,7 +369,7 @@ SizedBox(height:7),
                 border: Border.all(color: Color(0xFF00D4AA), width: 0.2),
               ),
               padding: const EdgeInsets.all(16),
-              child: Text("CONTENT"),
+              child: _payContent(context),
             ),
 
             const SizedBox(height: 16),
@@ -324,8 +428,13 @@ SizedBox(height:7),
 
       final newExpenses = await Api.getExpensesAfter(UserData().groupList[widget.groupIndex]["groupId"], lastTimestamp);
       var gb = await Api.getGroupBalance(UserData().groupList[widget.groupIndex]['groupId']);
+      num sum = 0;
+      for (var b in gb) {
+        sum = sum + b["amount"];
+      }
       setState(() {
         groupBalance = gb;
+        totalBalance = sum.toInt();
       });
 
       if (newExpenses.isNotEmpty) {

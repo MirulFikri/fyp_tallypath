@@ -212,4 +212,23 @@ class Api{
     } 
   }
 
+    static Future<List<dynamic>> getRecentExpenses() async {
+    final url = Uri.parse("${Globals.baseUrl}/api/expenses/recent");
+    try {
+      final res = await authClient.get(
+        url,
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return data;
+      } else {
+        throw ("Code ${res.statusCode}: ${res.body}");
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 }
