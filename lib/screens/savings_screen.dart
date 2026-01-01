@@ -187,7 +187,7 @@ class _SavingsScreenState extends State<SavingsScreen> with RouteAware{
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildSavingsStat('Target', Globals.formatCurrency(totalTarget/100).substring(3)),
+                        _buildSavingsStat('Target', Globals.formatCurrency(totalTarget/100)),
                         Container(
                           width: 1,
                           height: 30,
@@ -296,7 +296,7 @@ class _SavingsScreenState extends State<SavingsScreen> with RouteAware{
   }
 
   Widget _buildSavingsCard(Map<String, dynamic> goal) {
-    final tempIcon = Icons.abc;
+    final tempIcon = Icons.savings_outlined;
     double progress = goal['current'] / goal['target'];
 
     return GestureDetector(

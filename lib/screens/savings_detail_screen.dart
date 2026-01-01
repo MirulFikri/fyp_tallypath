@@ -12,7 +12,7 @@ class SavingsDetailScreen extends StatefulWidget {
 }
 
 class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
-  final tempIcon = Icons.abc;
+  final tempIcon = Icons.savings_outlined;
   late double localCurrent = 0;
   // Mock contribution history (will come from database later)
 
