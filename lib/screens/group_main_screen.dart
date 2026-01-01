@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
+import 'package:fyp_tallypath/screens/add_settlement_screen.dart';
 import 'package:fyp_tallypath/screens/group_info_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:intl/intl.dart';
@@ -27,7 +28,9 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
   List<dynamic> members = [];
   dynamic you;
   bool isPay = false;
+  bool isWaive = false;
   int totalBalance = 0;
+  bool isDebtState = false;
 
   @override
   void initState() {
@@ -58,106 +61,250 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
     _loadNewExpenses();
   }
 
-  Widget _payContent(BuildContext context) {
+  Widget _payContent(BuildContext context, {bool isWaive = false}) {
     return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.monetization_on, color: Colors.greenAccent, size: 24),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Amount Lent',
-                        style: TextStyle(color: Color.fromARGB(255, 0, 56, 45), fontSize: 12),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        Globals.formatCurrency(
-                          totalBalance/100
-                        ),
-                        style: const TextStyle(
-                          color: Colors.greenAccent,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                VerticalDivider(thickness: 1),
-                SizedBox(height: 140,child: SingleChildScrollView(
-                  child:Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children:[...cardBuilder(context)]
-                  )
-                ))
-              ],
+            InkWell(
+              child: Icon(Icons.close,),
+              onTap:(){
+                setState((){
+                  totalBalance = 0;
+                  isPay = false;
+                });
+              }
             ),
+        Container(
+          decoration: BoxDecoration(
+            //color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              dividerColor: Colors.transparent, // remove default divider
+            ),
+            child: ExpansionTile(
+              initiallyExpanded: true,
+              maintainState: true,
+              // tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              childrenPadding: const EdgeInsets.only(bottom: 12),
+              iconColor: Colors.grey.shade600,
+              collapsedIconColor: Colors.grey.shade600,
+              title: Row(
+                children: [
+                  Text(
+                    isWaive ? 'Waive Debt' : 'Pay Someone',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              children: [const Divider(height: 1), ..._buildBalanceList()],
+            ),
+          ),
+        ),           
+            // Row(
+            //   children: [
+            //     Container(
+            //       padding: const EdgeInsets.all(12),
+            //       decoration: BoxDecoration(
+            //         color: Colors.white,
+            //         borderRadius: BorderRadius.circular(12),
+            //       ),
+            //       child: Icon(Icons.monetization_on, color: isWaive ? Colors.greenAccent : Colors.redAccent, size: 24),
+            //     ),
+            //     const SizedBox(width: 12),
+            //     Expanded(
+            //       child: Column(
+            //         crossAxisAlignment: CrossAxisAlignment.start,
+            //         children: [
+            //           Text(
+            //             isWaive ? 'Amount Lent' : 'Amount Borrowed',
+            //             style: const TextStyle(color: Color.fromARGB(255, 0, 56, 45), fontSize: 12),
+            //           ),
+            //           const SizedBox(height: 4),
+            //           Text(
+            //             Globals.formatCurrency(
+            //               totalBalance/100
+            //             ),
+            //             style: TextStyle(
+            //               color: isWaive ? Colors.green: Colors.red,
+            //               fontSize: 22,
+            //               fontWeight: FontWeight.bold,
+            //             ),
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //     VerticalDivider(thickness: 1),
+            //     SizedBox(height: 140,child: SingleChildScrollView(
+            //       child:Column(
+            //         crossAxisAlignment: CrossAxisAlignment.start,
+            //         children:[...cardBuilder(context, isWaive)]
+            //       )
+            //     ))
+            //   ],
+            // ),
+
+
+
             
           ],
     );
   }
 
-  List<Widget> cardBuilder(BuildContext context){
+  List<Widget> _buildBalanceList(){
     List<Widget> w = [];
-    for(var b in groupBalance){
-      if (b["debtor"] == UserData().id) {
-          w.add(Card(
-      color: Colors.white70,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-      child: Padding(
-        padding: const EdgeInsets.all(6.0),
-        child: InkWell(
-            onTap:(){
-              print("Test");
-            },
-            child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Payer → Receiver Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // // Names and Arrow
-                //     Text("You", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                //     const SizedBox(width: 16),
-                //     // Stylized Arrow
-                //     Icon(
-                //       Icons.arrow_forward_rounded,
-                //       size: 2,
-                //       color: Colors.grey[600],
-                //     ),
-                //     const SizedBox(width: 16),
-                    Text(UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b["creditor"]), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                // Amount
-              ],
+    for (var b in groupBalance) {
+      if (!isWaive && b["debtor"] == UserData().id ) {
+          w.add(
+            InkWell(
+              child: _buildBalanceItem(
+                UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b["creditor"]),
+                Globals.formatCurrency(b["amount"] / 100),
+                Icons.monetization_on,
+                false 
             ),
-              Text(
-                Globals.formatCurrency(b["amount"]/100),
-                style: TextStyle(
-                  fontSize:16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF00D4AA),
-                )),
-          ],
-        )),
-      ),
-    ));
+            onTap: (){
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AddSettlementDialog(
+                    groupId: UserData().groupList[widget.groupIndex]["groupId"],
+                    userId: b["creditor"],
+                    amount: b["amount"],
+                    isWaive: false,
+                  );
+                },
+              );
+            }
+            )
+          );
+      }else if (isWaive && b["creditor"] == UserData().id) {
+        w.add(
+          InkWell(
+            child:_buildBalanceItem(
+              UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b["debtor"]),
+              Globals.formatCurrency(b["amount"] / 100),
+              Icons.monetization_on,
+              true,
+          ),
+          onTap:(){
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AddSettlementDialog(
+                    groupId: UserData().groupList[widget.groupIndex]["groupId"],
+                    userId: b["debtor"],
+                    amount: b["amount"],
+                    isWaive: true,
+                  );
+                },
+              );
+          }
+          )
+        );
       }
     }
+    return w;
+  }
+
+  List<Widget> cardBuilder(BuildContext context, bool isWaive){
+    List<Widget> w = [];
+    int tb = 0; 
+    for(var b in groupBalance){
+      if (b["debtor"] == UserData().id && !isWaive) {
+          tb = (tb + b["amount"]).toInt();
+          w.add(Card(
+          color: Colors.white70,
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          child: Padding(
+            padding: const EdgeInsets.all(6.0),
+            child: InkWell(
+                onTap:(){
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AddSettlementDialog(groupId: UserData().groupList[widget.groupIndex]["groupId"], userId: b["creditor"], amount: b["amount"]);
+                    },
+                  );
+                },
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Payer → Receiver Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                        Text(UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b["creditor"]), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    // Amount
+                  ],
+                ),
+                  Text(
+                    Globals.formatCurrency(b["amount"]/100),
+                    style: TextStyle(
+                      fontSize:16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF00D4AA),
+                    )),
+              ],
+            )),
+          ),
+        ));
+      }else if(b["creditor"] == UserData().id && isWaive){
+          tb = (tb + b["amount"]).toInt();
+          w.add(
+          Card(
+            color: Colors.white70,
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            child: Padding(
+              padding: const EdgeInsets.all(6.0),
+              child: InkWell(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AddSettlementDialog(
+                        groupId: UserData().groupList[widget.groupIndex]["groupId"],
+                        userId: b["debtor"],
+                        amount: b["amount"],
+                        isWaive: true,
+                      );
+                    },
+                  );
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Payer → Receiver Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: b["debtor"]),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                        // Amount
+                      ],
+                    ),
+                    Text(
+                      Globals.formatCurrency(b["amount"] / 100),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF00D4AA)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );       
+      }
+    }
+    setState(() {
+      totalBalance = tb;
+    });
     return w;
   }
 
@@ -233,7 +380,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
   ),
 ),
 
-SizedBox(height:7),
+            SizedBox(height:7),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children:[
@@ -249,6 +396,7 @@ SizedBox(height:7),
                   onPressed: (){
                     setState(() {
                       isPay = true;
+                      isWaive = false;
                     });
                     //Navigator.push(context, MaterialPageRoute(builder: (context) => PayDebtScreen(balance: groupBalance, groupIndex: widget.groupIndex,)));
                   },
@@ -266,6 +414,7 @@ SizedBox(height:7),
                   onPressed: (){
                     setState(() {
                       isPay = true;
+                      isWaive = true;
                     });
                     //Navigator.push(context, MaterialPageRoute(builder: (context) => WaiveScreen(balance: groupBalance, groupIndex: widget.groupIndex)));
                   },
@@ -367,7 +516,7 @@ SizedBox(height:7),
                 border: Border.all(color: Color(0xFF00D4AA), width: 0.2),
               ),
               padding: const EdgeInsets.all(16),
-              child: _payContent(context),
+              child: _payContent(context, isWaive: isWaive),
             ),
 
             const SizedBox(height: 16),
@@ -426,13 +575,8 @@ SizedBox(height:7),
 
       final newExpenses = await Api.getExpensesAfter(UserData().groupList[widget.groupIndex]["groupId"], lastTimestamp);
       var gb = await Api.getGroupBalance(UserData().groupList[widget.groupIndex]['groupId']);
-      num sum = 0;
-      for (var b in gb) {
-        sum = sum + b["amount"];
-      }
       setState(() {
         groupBalance = gb;
-        totalBalance = sum.toInt();
       });
 
       if (newExpenses.isNotEmpty) {
@@ -554,13 +698,13 @@ SizedBox(height:7),
           isMe: expense["creatorId"] == you["userId"],
           link: link,
           time: timeStr
-        ) : expense["isStatement"]??false
+        ) : expense["isStatement"]
             ? TransactionCard(
               context,
-              title: "Payment@Cash",
-              payer: "You",
-              receiver: "John",
-              amount: 55.98,
+              title: expense["title"],
+              payer: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["paidBy"]),
+              receiver: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["splits"][0]["userId"]),
+              amount: Globals.formatCurrency(expense["amount"]/100),
               time: timeStr
             ) : ExpenseMessageBubble2(
               creatorName: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["creatorId"]),
@@ -1281,7 +1425,7 @@ class TransactionCard extends StatelessWidget {
   final String title;
   final String payer;
   final String receiver;
-  final double amount;
+  final String amount;
   final String time;
 
   const TransactionCard(BuildContext context,{
@@ -1295,15 +1439,15 @@ class TransactionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width * 0.8;
-    return SizedBox(width:width<600 ? width:600, child: Card(
+    final width = MediaQuery.of(context).size.width * 0.7;
+    return Align(alignment: Alignment.center, child: Card(
       color: Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+        child: SizedBox(width:width, child:Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
               // Title
@@ -1319,8 +1463,8 @@ class TransactionCard extends StatelessWidget {
                   )
                 ],
               ): Align(
-                alignment: Alignment.centerLeft,
-                child: Text(title.split('@')[0], style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[800])),
+                alignment: Alignment.center,
+                child: Text(title.split('@')[0], textAlign: TextAlign.center,style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[800])),
               ),
 
             Divider(),
@@ -1343,7 +1487,7 @@ class TransactionCard extends StatelessWidget {
               ],
             ),
               Text(
-              "\$${amount.toStringAsFixed(2)}",
+                amount,
                 style: TextStyle(
                   fontSize:16,
                   fontWeight: FontWeight.bold,
@@ -1357,7 +1501,37 @@ class TransactionCard extends StatelessWidget {
           ],
         ),
       ),
-    ));
+    )));
   }
 }
 
+Widget _buildBalanceItem(String title, String amount, IconData icon, bool isWaive) {
+  return Container(
+    margin: const EdgeInsets.only(top: 12),
+    padding: const EdgeInsets.all(4),
+    decoration: BoxDecoration(color: Colors.white70, borderRadius: BorderRadius.circular(6)),
+    child: Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration( borderRadius: BorderRadius.circular(12)),
+          child:  Icon(icon, color: isWaive ? Colors.greenAccent : Colors.redAccent) 
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            ],
+          ),
+        ),
+        Column(
+          children: [
+            Text("$amount  ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isWaive ? Colors.greenAccent : Colors.redAccent)),
+          ],
+        ),
+      ],
+    ),
+  );
+}

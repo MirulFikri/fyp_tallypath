@@ -269,20 +269,36 @@ Container(
     final DateFormat formatter = DateFormat("MMM, dd  HH:mm");
     final DateFormat formatterToday = DateFormat(" HH:mm");
 
+    try{
     if(recentList.isNotEmpty && spendingData.isNotEmpty){
       for(var r in recentList) {
         if(!r["isMessage"]){
+          String title, desc;
+          IconData icon;
+          if(r["isStatement"]){
+            title = r["title"].split('@')[0] == "Waived" ? "Waived ${UserData().getNameById(groupId: r["groupId"], userId: r["paidBy"])}": "Payment | ${r["title"].split('@')[1]}";
+            icon = r["title"].split('@')[0] == "Waived" ? Icons.handshake_outlined : Icons.payments_outlined; 
+            desc = r["title"].split('@')[0] == "Waived" ? UserData().getNameById(groupId: r["groupId"],userId: r["title"].split('@')[1])
+            : "From ${UserData().getNameById(groupId: r["groupId"], userId: r["paidBy"])} to ${UserData().getNameById(groupId: r["groupId"],userId: r["title"].split('@')[2])}";
+          }else{
+            title = r["title"];
+            icon = (r["groupId"]==UserData().groupList[0]["groupId"] )? Icons.person : Icons.group;
+            desc = UserData().groupList.firstWhere((g)=>g["groupId"]==r["groupId"])["name"];
+          }
           var date = Globals.parseDateToLocal(r["createdAt"]);
           w.add(_buildTransactionItem(
-            r["title"],
-            UserData().groupList.firstWhere((g)=>g["groupId"]==r["groupId"])["name"],
+            title,
+            desc,
             date.isBefore(spendingData.first.year) ? formatter.format(date):"Today, ${formatterToday.format(date)}",
             Globals.formatCurrency(r["amount"]/100),
-            (r["groupId"]==UserData().groupList[0]["groupId"] )? Icons.person : Icons.group,
+            icon
           ));
           if(w.length>=15)break;
         }
       }
+    }
+    }catch(e){
+      print(e);
     }
     return w;
   }

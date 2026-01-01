@@ -182,4 +182,19 @@ class UserData extends ChangeNotifier {
       return "null";
     }
   }
+
+    String getNameById({String? groupId, String? userId}) {
+    if (userId == id) return "You";
+    try {
+      if (groupId!= null && userId != null) {
+        var g = groupList.firstWhere((g)=>g["groupId"] == groupId);
+        var m = g["members"].firstWhere((m) => m["userId"] == userId);
+        return m["nameInGroup"];
+      }
+      return "";
+    } catch (e) {
+      print(e);
+      return "null";
+    }
+  }
 }
