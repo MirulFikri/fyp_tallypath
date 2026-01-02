@@ -61,12 +61,12 @@ class _LoginScreenState extends State<LoginScreen> {
             }
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Server Error: ${res.body}")));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${res.body}")));
           }
         }
       } catch (e) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
           }
       } finally {
         setState(() => _isLoading = false);

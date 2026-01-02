@@ -19,7 +19,9 @@ class UserData extends ChangeNotifier {
   String? mobile;
   String? dob;
 
-  List<dynamic> groupList = [];
+  List<dynamic> groupList = [
+    {"groupId":"", "name":"", "total":0, "members":[]},
+  ];
   List<dynamic> balanceList = [];
 
   /// Initialize from SharedPreferences
@@ -141,7 +143,7 @@ class UserData extends ChangeNotifier {
     return !(token==null||token=="");
   }
 
-  Future<dynamic> updateGroupList() async{
+  Future<void> updateGroupList() async{
     try{
       var updatedList = await Api.getUserGroups();
       groupList = updatedList;
@@ -149,9 +151,8 @@ class UserData extends ChangeNotifier {
       balanceList = updatedBalance;
       notifyListeners();
     }catch(e){
-      print('Error: $e');
+      print('$e');
     }
-    return groupList[0];
   }
 
     Future<dynamic> updateBalanceList() async {
@@ -163,7 +164,7 @@ class UserData extends ChangeNotifier {
       }
       return bl;
     } catch (e) {
-      print('Error: $e');
+      print('$e');
     }
     return balanceList[0];
   }

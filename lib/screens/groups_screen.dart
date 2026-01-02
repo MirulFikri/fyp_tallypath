@@ -158,7 +158,6 @@ Widget balanceList(List<dynamic> balance, int groupIndex) {
                       ),
                       const SizedBox(height: 12),
                       const Divider(),
-                      const SizedBox(height: 12),
                       
                     ],
                   )
@@ -302,36 +301,38 @@ Widget balanceList(List<dynamic> balance, int groupIndex) {
                   ],
                 ),
               ),
+
+              balanceList(balance, index)
             ],
           ),
-          const SizedBox(height: 16),
-          const Divider(),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Total',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  Text(
-                    Globals.formatCurrency(totalAmount/100),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              balanceList(balance, index),
-            ],
-          ),
+          // const SizedBox(height: 16),
+          // const Divider(),
+          // const SizedBox(height: 12),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Column(
+          //       crossAxisAlignment: CrossAxisAlignment.start,
+          //       children: [
+          //         Text(
+          //           'Total',
+          //           style: TextStyle(
+          //             fontSize: 12,
+          //             color: Colors.grey[600],
+          //           ),
+          //         ),
+          //         Text(
+          //           Globals.formatCurrency(totalAmount/100),
+          //           style: const TextStyle(
+          //             fontSize: 18,
+          //             fontWeight: FontWeight.bold,
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //     balanceList(balance, index),
+          //   ],
+          // ),
         ],
       )
       )
@@ -456,10 +457,10 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
             }
           }
       } else {
-        ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
+        ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("${res.body}")));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("Network error: $e")));
+      ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("$e")));
     }finally{
       setState(() { _isLoading = false;});
     }
@@ -570,10 +571,10 @@ class _JoinGroupDialogState extends State<JoinGroupDialog> {
             }
           }
       } else {
-        ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
+        ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("${res.body}")));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("Network error: $e")));
+      ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("$e")));
     }finally{
       setState(() { _isLoading = false;});
     }

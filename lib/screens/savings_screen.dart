@@ -27,8 +27,7 @@ class _SavingsScreenState extends State<SavingsScreen> with RouteAware{
         allGoals = [...goals];
       });
     }catch(e){
-      print(e);
-      if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
     }
   }
 
@@ -333,7 +332,7 @@ class _SavingsScreenState extends State<SavingsScreen> with RouteAware{
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                        Text(
                         goal['title'],
                         style: const TextStyle(
                           fontSize: 16,
@@ -341,6 +340,7 @@ class _SavingsScreenState extends State<SavingsScreen> with RouteAware{
                         ),
                       ),
                       const SizedBox(height: 4),
+                      Row(children: [
                       Text(
                         goal['due']==null ? "Not Set" : getDeadlineText(Globals.parseDateToLocal(goal['due'])),
                         style: TextStyle(
@@ -348,6 +348,9 @@ class _SavingsScreenState extends State<SavingsScreen> with RouteAware{
                           color: Colors.grey[600],
                         ),
                       ),
+                      SizedBox(width:8),
+                      goal["hasReminder"] ? Icon(Icons.notifications_active, size: 16, color: Colors.grey[600]) : SizedBox(),
+                      ],)
                     ],
                   ),
                 ),

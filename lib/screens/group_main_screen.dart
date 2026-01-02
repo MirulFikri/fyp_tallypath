@@ -559,7 +559,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
       });
       _loadNewExpenses();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
     }
   }
 
@@ -586,7 +586,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         });
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
     }
   }
 
@@ -1161,7 +1161,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                 if (mounted) {
                   ScaffoldMessenger.of(
                     context,
-                  ).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+                  ).showSnackBar(SnackBar(content: Text('$e'), backgroundColor: Colors.red));
                 }
               }
 
@@ -1394,7 +1394,7 @@ class FloatingMessageInputBar extends StatelessWidget {
                           onSend();
                           controller.clear();
                         } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
                         }
                       },
                       tooltip: 'Send Message',

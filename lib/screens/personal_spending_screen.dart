@@ -3,13 +3,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
+import 'package:fyp_tallypath/screens/add_settlement_screen.dart';
+import 'package:fyp_tallypath/screens/group_info_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:intl/intl.dart';
 import 'package:number_editing_controller/number_editing_controller.dart';
 import 'package:provider/provider.dart';
 
-class PersonalSpendingScreen extends StatefulWidget {
 
+class PersonalSpendingScreen extends StatefulWidget {
+  final groupIndex = 0;
   const PersonalSpendingScreen({super.key});
 
   @override
@@ -17,12 +20,16 @@ class PersonalSpendingScreen extends StatefulWidget {
 }
 
 class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
-  final int groupIndex = 0;
+  final TextEditingController _messageController = TextEditingController();
   List<dynamic> expenses = [];
   bool isLoading = true;
   var groupBalance = [];
   List<dynamic> members = [];
   dynamic you;
+  bool isPay = false;
+  bool isWaive = false;
+  int totalBalance = 0;
+  bool isDebtState = false;
 
   @override
   void initState() {
@@ -47,7 +54,7 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
     await showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AddExpenseDialog(groupIndex: groupIndex, members: members);
+        return AddExpenseDialog(groupIndex: widget.groupIndex, members: members);
       },
     );
     _loadNewExpenses();
@@ -56,69 +63,41 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      persistentFooterButtons: [BigAddButton(onPressed: _showAddExpenseDialog, height: 60)],
       backgroundColor: const Color(0xFFE8F9F5),
       appBar: AppBar(
         backgroundColor: Color(0xFF00D4AA),
         elevation: 0,
         centerTitle: false,
-        automaticallyImplyLeading: false,
-        title: Text(
-          UserData().groupList[groupIndex]['name'],
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
-        actions: [IconButton(icon: const Icon(Icons.search, color: Colors.white), onPressed: () {})],
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    UserData().groupList[widget.groupIndex]['name'],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(
           children: [
-            // Progress Card
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF00A885), Color(0xFF00D4AA)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(Icons.payments_sharp, color: Colors.white, size: 32),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Total Spending', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                            const SizedBox(height: 4),
-                            Text(
-                              Globals.formatCurrency(
-                                Provider.of<UserData>(context).groupList[groupIndex]["total"] / 100,
-                              ),
-                              style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  //const SizedBox(height:20),
-                ],
-              ),
-            ),
 
             const SizedBox(height: 16),
 
@@ -131,6 +110,18 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
                 ),
               ),
             ),
+
+            //TransactionCard(context, title: "Payment@Cash", payer: "You", receiver: "John", amount: 431.21, time: "12:12"),
+
+            SizedBox(height: 5),
+            FloatingMessageInputBar(
+              groupIndex: widget.groupIndex,
+              controller: _messageController,
+              onSend: () {
+                _loadNewExpenses();
+              },
+              buttonFunction: _showAddExpenseDialog,
+            ),
           ],
         ),
       ),
@@ -139,7 +130,7 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
 
   Future<void> _loadExpenses() async {
     try {
-      final expenses = await Api.getLatestExpenses(UserData().groupList[groupIndex]["groupId"]);
+      final expenses = await Api.getLatestExpenses(UserData().groupList[widget.groupIndex]["groupId"]);
       await UserData().updateGroupList();
       setState(() {
         this.expenses = expenses;
@@ -148,13 +139,13 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
       });
       _loadNewExpenses();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
     }
   }
 
   Future<void> _loadNewExpenses() async {
     try {
-      members = UserData().groupList[groupIndex]["members"];
+      members = [...UserData().groupList[widget.groupIndex]["members"]];
       you ??= members.firstWhere((m) => m["userId"] == UserData().id, orElse: () => null);
       members.removeWhere((m) => m["userId"] == you["userId"]);
       String lastTimestamp = you["joinedAt"];
@@ -162,12 +153,7 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
         lastTimestamp = expenses.first['createdAt'];
       }
 
-      final newExpenses = await Api.getExpensesAfter(UserData().groupList[groupIndex]["groupId"], lastTimestamp);
-      var gb = await Api.getGroupBalance(UserData().groupList[groupIndex]['groupId']);
-      setState(() {
-        groupBalance = gb;
-      });
-
+      final newExpenses = await Api.getExpensesAfter(UserData().groupList[widget.groupIndex]["groupId"], lastTimestamp);
       if (newExpenses.isNotEmpty) {
         setState(() {
           expenses = [...newExpenses, ...expenses];
@@ -175,7 +161,7 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
     }
   }
 
@@ -183,6 +169,7 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
     List<Widget> widgets = [];
     String? lastDate;
     final formatter = DateFormat("dd MMM yyyy");
+    String prevId = "";
 
     for (final expense in expenses.reversed.toList()) {
       final currentDate = formatter.format(Globals.parseDateToLocal(expense["createdAt"]));
@@ -202,144 +189,91 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
         );
         lastDate = currentDate;
       }
-
-      widgets.add(_buildExpenseItem(expense));
+      if (prevId != expense["creatorId"]) {
+        widgets.add(SizedBox(height: 16));
+      }
+      widgets.add(_buildExpenseItem(expense, expense["creatorId"] == prevId));
+      prevId = expense["creatorId"];
     }
 
     return widgets;
   }
 
-  Widget _buildExpenseItem(Map<String, dynamic> expense) {
-    final formatter = DateFormat("HH:mm");
+  Widget _buildExpenseItem(Map<String, dynamic> expense, bool link) {
+    final formatter = DateFormat("H:mm");
     DateTime dateTime = Globals.parseDateToLocal(expense["createdAt"]);
     String timeStr = formatter.format(dateTime);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Color.fromARGB(255, 210, 232, 255),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.add, color: Color.fromARGB(255, 255, 255, 255), size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(expense['title'], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                const SizedBox(height: 4),
-                Text(
-                  Globals.formatCurrency(expense['amount'] / 100),
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF00D4AA)),
-                ),
-              ],
-            ),
-          ),
-
-          Text(timeStr, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-        ],
-      ),
-    );
+    return expense["isMessage"]
+        ? _regularBubble(
+          context,
+          name: UserData().getNameInGroup(groupIndex: widget.groupIndex, userId: expense["creatorId"]),
+          content: expense["title"],
+          isMe: expense["creatorId"] == you["userId"],
+          link: link,
+          time: timeStr
+        ) : ExpenseMessageBubble2(
+              title: expense["title"],
+              amount: Globals.formatCurrency(expense["amount"] / 100),
+              time: timeStr
+            );
   }
 }
 
-class BigAddButton extends StatelessWidget {
-  final VoidCallback onPressed;
-  final String label;
-  final double height;
-  final Widget? icon;
-  final BorderRadiusGeometry borderRadius;
-  final Gradient? gradient;
-  final EdgeInsetsGeometry padding;
-  final List<BoxShadow>? boxShadow;
+bool willTextWrap(BuildContext context, {required String text, required TextStyle style, required double maxWidth, int maxLines = 1}) {
+  final textPainter = TextPainter(
+    text: TextSpan(text: text, style: style),
+    maxLines: maxLines,
+    textDirection:Directionality.of(context),
+  )..layout(maxWidth: maxWidth);
 
-  const BigAddButton({
-    super.key,
-    required this.onPressed,
-    this.label = 'Add',
-    this.height = 50,
-    this.icon,
-    this.borderRadius = const BorderRadius.only(
-      topLeft: Radius.circular(10),
-      topRight: Radius.circular(10),
-      bottomLeft: Radius.circular(10),
-      bottomRight: Radius.circular(10),
-    ),
-    this.gradient,
-    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-    this.boxShadow,
-  });
+  return textPainter.didExceedMaxLines;
+}
 
-  @override
-  Widget build(BuildContext context) {
-    final Gradient effectiveGradient =
-        gradient ??
-        LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Theme.of(context).colorScheme.primary, Theme.of(context).colorScheme.primaryContainer],
-        );
-
-    final List<BoxShadow> effectiveShadow =
-        boxShadow ?? [BoxShadow(color: Colors.black.withOpacity(0.18), offset: const Offset(0, -2), blurRadius: 12)];
-
-    // Use SafeArea + Material+InkWell to get ripple and proper accessibility
-    return SafeArea(
-      top: false,
-      child: Container(
-        height: height,
-        padding: EdgeInsets.zero,
-        decoration: BoxDecoration(gradient: effectiveGradient, borderRadius: borderRadius, boxShadow: effectiveShadow),
-        // Material gives elevation/ripple surface for InkWell
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: borderRadius is BorderRadius ? borderRadius as BorderRadius : BorderRadius.circular(16),
-            onTap: onPressed,
-            child: Padding(
-              padding: padding,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Optional icon
-                  if (icon != null) ...[
-                    icon!,
-                    const SizedBox(width: 12),
-                  ] else ...[
-                    const Icon(Icons.add_circle_outline, size: 30, semanticLabel: 'Add'),
-                    const SizedBox(width: 12),
-                  ],
-                  // Label
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.2,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+Widget _regularBubble(
+  BuildContext context, {
+  required String name,
+  required String content,
+  required String time,
+  required bool isMe,
+  required bool link,
+}) {
+  final theme = Theme.of(context);
+  final long = willTextWrap(context, text: content, style: theme.textTheme.bodyMedium!, maxWidth: 300);
+  return Align(
+    alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+    child: Container(
+      constraints: const BoxConstraints(maxWidth: 300),
+      margin: EdgeInsets.symmetric(vertical: 2, horizontal: 12),
+      padding:
+          link ? EdgeInsets.symmetric(vertical: 10, horizontal: 18) : EdgeInsets.symmetric(vertical: 6, horizontal: 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topRight: const Radius.circular(20),
+          bottomLeft: const Radius.circular(20),
+          topLeft: Radius.circular(isMe ? 20 : 2),
+          bottomRight: Radius.circular(isMe ? 2 : 20),
         ),
       ),
-    );
-  }
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          isMe || link ? SizedBox(height: 0) : Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
+          isMe || link
+              ? SizedBox(height: 0)
+              : SizedBox(width: name.length * 5, height: 7, child: Divider(thickness: 0.3)),
+          SizedBox(height:2),
+          Wrap(children: [
+            Text(content, style: theme.textTheme.bodyMedium,),
+            if(!long)Text("\n  $time", style:TextStyle(color: Colors.grey[500], fontSize: 9),)
+          ]),
+            if(long) Align(alignment: Alignment.bottomRight,child: Text(time, style:TextStyle(color: Colors.grey[500], fontSize: 9), softWrap: false,)),
+        ],
+      ),
+    ),
+  );
 }
-
-
 
 class AddExpenseDialog extends StatefulWidget {
   final int groupIndex;
@@ -355,11 +289,19 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
   final TextEditingController descController = TextEditingController();
   final amountController = NumberEditingTextController.currency(currencyName: 'MYR', allowNegative: false);
   final formKey = GlobalKey<FormState>();
+  final splitController = NumberEditingTextController.currency(value: 0, currencyName: 'MYR', allowNegative: false);
+  int amt = 0;
+  List<String> names = [];
 
   @override
   void initState() {
+    names.add(UserData().id.toString());
+    for (var member in widget.members) {
+      names.add(member['userId'].toString());
+    }
     super.initState();
   }
+
 
 
   @override
@@ -379,6 +321,8 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               TextFormField(
                 controller: titleController,
                 decoration: InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
                   hintText: 'New Expense',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
@@ -400,6 +344,8 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                 controller: amountController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
                   hintText: 'RM 0.00',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
@@ -412,24 +358,16 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                     return 'Amount can\'t be empty';
                   }
                   return null;
-                },),
-              SizedBox(height: 16),
-              Divider(thickness: 1),
-              const SizedBox(height: 16),
-              const Text('Description (Optional)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: descController,
-                decoration: InputDecoration(
-                  hintText: 'Expense details',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF00D4AA)),
-                  ),
-                ),
+                },
+                onChanged: (value) {
+                  setState(() {
+                    amt = ((amountController.number ?? 0) * 100).toInt();
+                  });
+                },
               ),
+
               const SizedBox(height: 16),
+              Divider(thickness: 1),
               Row(
                 children: [
                   Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
@@ -458,11 +396,15 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
         TextButton(
           onPressed: () {
             amountController.clear();
+            splitController.clear();
             Navigator.pop(context);
           },
-          child: const Text('Cancel'),
+          child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
         ),
-        ElevatedButton(
+        FloatingActionButton(
+          heroTag: null,
+          backgroundColor: const Color(0xFF00D4AA),
+          child: const Icon(Icons.add, color: Colors.white),
           onPressed: () async {
             if (formKey.currentState!.validate()) {
               var num = amountController.number ?? 0;
@@ -474,28 +416,180 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                 "groupId": UserData().groupList[widget.groupIndex]["groupId"],
                 "title": titleController.text.trim(),
                 "amount": amt,
-                "splits":splits,
+                "paidBy": UserData().id,
+                "splits": splits,
               });
 
               try {
                 await Api.createExpense(body, UserData().groupList[widget.groupIndex]["groupId"]);
               } catch (e) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+                if (mounted) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('$e'), backgroundColor: Colors.red));
+                }
               }
 
               Navigator.pop(context);
             } else {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Please enter a valid value'), backgroundColor: Colors.red));
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid value'), backgroundColor: Colors.red),
+                );
+              }
             }
           },
-          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00D4AA)),
-          child: const Text('Save'),
         ),
       ],
+    );
+  }
+}
+
+class ExpenseMessageBubble2 extends StatelessWidget {
+  final String title;
+  final String amount;
+  final String time;
+
+  const ExpenseMessageBubble2({
+    super.key,
+
+    required this.title,
+    required this.amount,
+
+
+    required this.time,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 340),
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(9)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600))),
+                const SizedBox(width: 8),
+                Text(
+                  amount,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+
+            SizedBox(height:10),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Text(time, style: TextStyle(color: Colors.grey[500], fontSize: 9)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class FloatingMessageInputBar extends StatelessWidget {
+  final TextEditingController controller;
+  final VoidCallback onSend;
+  final String hintText;
+  final VoidCallback buttonFunction;
+  final int groupIndex;
+
+  const FloatingMessageInputBar({
+    super.key,
+    required this.controller,
+    required this.onSend,
+    this.hintText = 'Add messages, receipts, etc',
+    required this.buttonFunction,
+    required this.groupIndex,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 16, offset: const Offset(0, 6)),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  minLines: 1,
+                  maxLines: 4,
+                  style: const TextStyle(fontSize: 15, color: Colors.black),
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(vertical: 18.0, horizontal: 10.0),
+                    isDense: true, // Helps remove extra default padding
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: hintText,
+                    hintStyle: TextStyle(color: Colors.grey.shade500),
+                    // border: InputBorder.none,
+                    isCollapsed: true,
+                    suffixIcon: IconButton(
+                      iconSize: 20,
+                      icon: const Icon(Icons.send_sharp),
+                      onPressed: () async {
+                        final String body = jsonEncode({
+                          "groupId": UserData().groupList[groupIndex]["groupId"],
+                          "title": controller.text.trim(),
+                          "isMessage": true,
+                        });
+                        try {
+                          await Api.createExpense(body, UserData().groupList[groupIndex]["groupId"]);
+                          onSend();
+                          controller.clear();
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                        }
+                      },
+                      tooltip: 'Send Message',
+                    ),
+                    // prefixIcon: IconButton(
+                    //   icon: const Icon(Icons.add),
+                    //   onPressed: () {}, // 4. Assign your action to onPressed
+                    //   tooltip: 'Attach photos',
+                    // ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 18),
+              FloatingActionButton(
+                onPressed: buttonFunction,
+                backgroundColor: const Color(0xFF00D4AA),
+                child: const Icon(Icons.add, color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

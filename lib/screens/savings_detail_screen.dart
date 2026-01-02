@@ -32,7 +32,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
       });
     } catch (e) {
       print(e);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
     }
   }
 
@@ -266,9 +266,11 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+                        widget.plan["hasReminder"] ? Wrap(children:[Text(widget.plan["reminder"], style: TextStyle(color: Colors.white70, fontSize: 14))]): SizedBox(),
                             ],
                           ),
                         ),
+
                       ],
                     ),
                     const SizedBox(height: 20),

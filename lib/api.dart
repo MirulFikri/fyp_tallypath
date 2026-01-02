@@ -20,10 +20,10 @@ class Api{
           final data = jsonDecode(res.body);
           return data;
       } else {
-        throw ("Code ${res.statusCode}: ${res.body}");
+        throw ("${res.statusCode}: ${res.body}");
       }
     } catch (e) {
-      rethrow;
+      throw("Network Error: Check your connection");
     } 
 
   }

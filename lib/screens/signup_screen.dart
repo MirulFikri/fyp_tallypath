@@ -70,12 +70,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
       } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
+        ).showSnackBar(SnackBar(content: Text("${res.body}")));
       }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Network error: $e")));
+      ).showSnackBar(SnackBar(content: Text("$e")));
     }
   }
 
@@ -109,12 +109,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Error: ${res.body}")));
+        ).showSnackBar(SnackBar(content: Text("${res.body}")));
       }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Network error: $e")));
+      ).showSnackBar(SnackBar(content: Text("$e")));
     } finally {
       setState(() => _isLoading = false);
     }

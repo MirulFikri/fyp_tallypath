@@ -146,7 +146,7 @@ class _AddSettlementDialogState extends State<AddSettlementDialog> {
                 if (mounted) {
                   ScaffoldMessenger.of(
                     context,
-                  ).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+                  ).showSnackBar(SnackBar(content: Text('$e'), backgroundColor: Colors.red));
                 }
               }
 

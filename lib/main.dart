@@ -1,3 +1,5 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fyp_tallypath/auth_service.dart';
@@ -5,6 +7,8 @@ import 'package:fyp_tallypath/globals.dart';
 import 'package:provider/provider.dart';
 import 'screens/splash_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
+import 'firebase_options.dart';
+
 
 void main() async{
   SystemChrome.setSystemUIOverlayStyle(
@@ -14,6 +18,15 @@ void main() async{
     ),
   );
   WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.android,
+  // );
+  // final messaging = FirebaseMessaging.instance;
+  // await messaging.requestPermission(alert: true, badge: true, sound: true);
+
+  // String? token = await FirebaseMessaging.instance.getToken();
+  // print("FCM Token: $token");
+  
   await UserData().init();
   runApp(
     MultiProvider(

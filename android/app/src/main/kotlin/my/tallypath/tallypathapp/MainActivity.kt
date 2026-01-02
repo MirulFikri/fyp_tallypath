@@ -1,4 +1,4 @@
-package com.example.fyp_tallypath
+package my.tallypath.tallypathapp
 
 import io.flutter.embedding.android.FlutterActivity
 

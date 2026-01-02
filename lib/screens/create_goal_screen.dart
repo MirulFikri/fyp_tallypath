@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
+import 'package:number_editing_controller/number_editing_controller.dart';
 
 class CreateGoalScreen extends StatefulWidget {
   const CreateGoalScreen({super.key});
@@ -13,9 +14,15 @@ class CreateGoalScreen extends StatefulWidget {
 
 class _CreateGoalScreenState extends State<CreateGoalScreen> {
   final TextEditingController titleController = TextEditingController();
-  final TextEditingController targetController = TextEditingController();
+  final NumberEditingTextController targetController = NumberEditingTextController.currency(
+    currencyName: 'MYR',
+    allowNegative: false,
+  );
   DateTime? selectedDeadline;
   IconData selectedIcon = Icons.savings;
+  int interval = 1, intervalDays = 1; 
+  String reminder = "";
+  bool hasReminder = false;
 
   // Available goal icons
   final List<Map<String, dynamic>> goalIcons = [
@@ -147,7 +154,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
       return;
     }
 
-    double? target = double.tryParse(targetController.text);
+    double? target = targetController.number?.toDouble();
     if (target == null || target <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -160,6 +167,8 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
 
     //use integer cents format before uploading to database
     target *= 100;
+    String r = hasReminder ? "${Globals.formatCurrency(target/interval/100)} $reminder" : "";
+
 
     String? due = Globals.parseDateToUtc(selectedDeadline);
     if(due != null) due = "\"$due\"";
@@ -168,15 +177,17 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
       "title": "${titleController.text}",
       "target": ${target.toInt()},
       "current": 0,
-      "due": $due
-    }
+      "due": $due,
+      "hasReminder": $hasReminder,
+      "reminder": "$r"
+      }
     """;
 
     try{
       await Api.createPlan(newGoal);
     }catch(e){
       print(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('$e')));
     }
 
     Navigator.pop(context, newGoal);
@@ -298,9 +309,14 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
               TextField(
                 controller: targetController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                onChanged:(value){
+                  setState((){
+                    hasReminder = !hasReminder;
+                    hasReminder = !hasReminder;
+                  });
+                },
                 decoration: InputDecoration(
-                  prefixText: 'RM ',
-                  hintText: '0.00',
+                  hintText: 'RM0.00',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -369,6 +385,34 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
                 ),
               ),
               const SizedBox(height: 32),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Row(
+                    //   children: [
+                        IntervalSelector(
+                          onChanged: (value) {
+                            if(!value.enabled)return;
+                            setState((){
+                              selectedDeadline = value.getDeadline();
+                              interval = value.amount;
+                              hasReminder = value.enabled;
+                              intervalDays = value.amount * value.unit.days;
+                              reminder = value.toString();
+                            });
+                          },
+                        ),
+                        // Expanded(child:SizedBox()),
+                      // ],
+                    // ),
+                    hasReminder ? Text("Recurring Amount:\n${Globals.formatCurrency((targetController.number??0).toInt()/interval)}", textAlign: TextAlign.center,) : SizedBox(),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
 
               // Create Button
               SizedBox(
@@ -399,3 +443,192 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
     );
   }
 }
+
+class IntervalSelector extends StatefulWidget {
+  const IntervalSelector({super.key, this.onChanged});
+
+  final void Function(IntervalValue value)? onChanged;
+
+  @override
+  State<IntervalSelector> createState() => _IntervalSelectorState();
+}
+
+class _IntervalSelectorState extends State<IntervalSelector> {
+  bool _enabled = false;
+  IntervalUnit _unit = IntervalUnit.daily;
+  int _amount = 1;
+
+  final _controller = TextEditingController(text: '1');
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _notify() {
+    widget.onChanged?.call(IntervalValue(_amount, _unit, _enabled));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      color: Colors.white70,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Colors.greenAccent)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Switch.adaptive(
+                  value: _enabled,
+                  onChanged: (v) {
+                    setState(() => _enabled = v);
+                    if (v) _notify();
+                  },
+                ),
+                Text('  Add Reminder', style: theme.textTheme.titleMedium),
+                Expanded(child: SizedBox()),
+                Icon(Icons.notification_add)
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            /// Segmented control (Daily / Weekly / Monthly)
+            Opacity(
+              opacity: _enabled ? 1 : 0.4,
+              child: IgnorePointer(
+                ignoring: !_enabled,
+                child: SegmentedButton<IntervalUnit>(
+              segments: const [
+                ButtonSegment(value: IntervalUnit.daily, label: Text('Daily')),
+                ButtonSegment(value: IntervalUnit.weekly, label: Text('Weekly')),
+                ButtonSegment(value: IntervalUnit.monthly, label: Text('Monthly')),
+              ],
+              selected: {_unit},
+              onSelectionChanged: (value) {
+                setState(() => _unit = value.first);
+                _notify();
+              },
+            ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            /// Amount selector
+            Opacity(
+              opacity: _enabled ? 1 : 0.4,
+              child: IgnorePointer(
+                ignoring: !_enabled,
+                child: Row(
+                  children: [
+                IconButton.filledTonal(
+                  icon: const Icon(Icons.remove),
+                  onPressed: _amount > 1
+                      ? () {
+                          setState(() {
+                            _amount--;
+                            _controller.text = _amount.toString();
+                          });
+                          _notify();
+                        }
+                      : null,
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 90,
+                  child: TextField(
+                    controller: _controller,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onChanged: (v) {
+                      final parsed = int.tryParse(v);
+                      if (parsed != null && parsed >= 1) {
+                        setState(() => _amount = parsed);
+                        _notify();
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                IconButton.filledTonal(
+                  icon: const Icon(Icons.add),
+                  onPressed: () {
+                    setState(() {
+                      _amount++;
+                      _controller.text = _amount.toString();
+                    });
+                    _notify();
+                  },
+                ),
+                const SizedBox(width: 12),
+                Text(_unit.label),
+                  ],
+                ),
+              ),
+        )],
+        ),
+      ),
+    );
+  }
+}
+
+/// Value object you can store or send to backend
+class IntervalValue {
+  final int amount;
+  final IntervalUnit unit;
+  final bool enabled;
+
+  const IntervalValue(this.amount, this.unit, this.enabled);
+
+  @override
+  String toString() => 'Every $amount ${unit.label}';
+  DateTime getDeadline() => DateTime.now().add(Duration(days: amount * unit.days));
+}
+
+enum IntervalUnit { daily, weekly, monthly }
+
+extension IntervalUnitLabel on IntervalUnit {
+  String get label {
+    switch (this) {
+      case IntervalUnit.daily:
+        return 'day(s)';
+      case IntervalUnit.weekly:
+        return 'week(s)';
+      case IntervalUnit.monthly:
+        return 'month(s)';
+    }
+  }
+}
+extension IntervalUnitDays on IntervalUnit {
+  int get days{
+    switch (this) {
+      case IntervalUnit.daily:
+        return 1;
+      case IntervalUnit.weekly:
+        return 7;
+      case IntervalUnit.monthly:
+        return 30;
+    }
+  }
+}
+
+/// Example usage:
+/// IntervalSelector(
+///   onChanged: (value) {
+///     debugPrint(value.toString());
+///   },
+/// )
