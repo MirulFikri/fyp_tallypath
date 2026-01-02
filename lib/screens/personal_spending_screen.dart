@@ -98,7 +98,21 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
         padding: const EdgeInsets.all(10),
         child: Column(
           children: [
-
+                Container(
+              constraints: BoxConstraints(),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Color.fromARGB(255, 240, 247, 245),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(color: Colors.black38, offset: Offset(0, 4), blurRadius: 6, spreadRadius: -4),
+                  BoxShadow(color: Colors.black38, offset: Offset(0, -4), blurRadius: 6, spreadRadius: -4),
+                  //BoxShadow(color: Color.fromARGB(255, 24, 255, 151).withOpacity(0.25), blurRadius: 16, spreadRadius: 1),
+                ],
+                border: Border.all(color: Color(0xFF00D4AA), width: 0.2),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: _content(context),),
             const SizedBox(height: 16),
 
             Expanded(
@@ -217,6 +231,55 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
               amount: Globals.formatCurrency(expense["amount"] / 100),
               time: timeStr
             );
+  }
+  
+  Widget? _content(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF00D4AA).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.payments_sharp, color: Color(0xFF00D4AA), size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Total Spending',
+                        style: TextStyle(color: Color.fromARGB(255, 0, 56, 45), fontSize: 12),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        Globals.formatCurrency(
+                          Provider.of<UserData>(context).groupList[widget.groupIndex]["total"] / 100,
+                        ),
+                        style: const TextStyle(
+                          color: Color.fromARGB(255, 0, 56, 45),
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Divider(thickness: 0.6),
+          ]
+        )
+        ]
+    );
   }
 }
 

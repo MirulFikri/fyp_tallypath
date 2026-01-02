@@ -595,7 +595,7 @@ class IntervalValue {
   const IntervalValue(this.amount, this.unit, this.enabled);
 
   @override
-  String toString() => 'Every $amount ${unit.label}';
+  String toString() => 'x $amount ${unit.label}';
   DateTime getDeadline() => DateTime.now().add(Duration(days: amount * unit.days));
 }
 
