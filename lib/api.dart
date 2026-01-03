@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:fyp_tallypath/auth_service.dart';
+import 'package:http/http.dart' as http;
 
 class Api{
   static Future<List<dynamic>> getLatestExpenses(String groupId, {int limit = 50}) async {
@@ -231,12 +232,69 @@ class Api{
     }
   }
 
-    static Future<dynamic> createGroupInvite(String groupId) async {
+  static Future<dynamic> createGroupInvite(String groupId) async {
     final url = Uri.parse("${Globals.baseUrl}/api/groups/$groupId/invites");
     try {
       final res = await authClient.post(
         url,
         headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return data;
+      } else {
+        throw ("Code ${res.statusCode}: ${res.body}");
+      }
+    } catch (e) {
+      rethrow;
+    }
+
+    
+  }
+
+  static Future<dynamic> registerDeviceFcm({required String token, required String deviceId}) async {
+    final url = Uri.parse("${Globals.baseUrl}/api/user-devices/register");
+    final body = """
+      {
+        "fcmToken" : "$token",
+        "platform" : "Android",
+        "deviceId" : "$deviceId"
+      }
+      """;
+
+    try {
+      final res = await authClient.post(
+        url,
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
+        body: body
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return data;
+      } else {
+        throw ("Code ${res.statusCode}: ${res.body}");
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+    static Future<dynamic> deactivateDeviceFcm({required String token, required String deviceId}) async {
+    final url = Uri.parse("${Globals.baseUrl}/api/user-devices/deactivate");
+    final body = """
+      {
+        "fcmToken" : "$token",
+        "deviceId" : "$deviceId"
+      }
+      """;
+
+    try {
+      final res = await authClient.post(
+        url,
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer ${UserData().token}"},
+        body: body,
       );
 
       if (res.statusCode == 200) {

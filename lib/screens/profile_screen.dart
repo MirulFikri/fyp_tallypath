@@ -15,11 +15,6 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   static Future<void> _logout(BuildContext context) async {
     await AuthService().logout();
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-      (route) => false, // removes all previous routes (can't go back)
-    );
   }
 
   @override

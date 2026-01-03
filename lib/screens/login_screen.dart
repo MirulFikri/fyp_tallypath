@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/fcm.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:http/http.dart' as http;
 import 'signup_screen.dart';
@@ -49,6 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
               AuthService().setToken(token, getExpiryFromJwt(token));
               await UserData().fromJson(data);
               await UserData().updateGroupList();
+              await FcmService.instance.init(data["user"]["id"]);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Login successful!")),

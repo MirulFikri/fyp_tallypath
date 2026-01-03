@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_tallypath/fcm.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:http/http.dart' as http;
@@ -60,6 +61,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             AuthService().setToken(token, getExpiryFromJwt(token));
             await UserData().fromJson(data);
             await UserData().updateGroupList();
+            await FcmService.instance.init(data["user"]["id"]);
             if (mounted) {
               Navigator.pushReplacement(
                 context,

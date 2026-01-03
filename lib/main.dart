@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/auth_service.dart';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:provider/provider.dart';
@@ -11,36 +11,43 @@ import 'firebase_options.dart';
 
 
 void main() async{
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.android,
-  // );
-  // final messaging = FirebaseMessaging.instance;
-  // await messaging.requestPermission(alert: true, badge: true, sound: true);
 
-  // String? token = await FirebaseMessaging.instance.getToken();
-  // print("FCM Token: $token");
-  
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.android,
+  );
+
   await UserData().init();
+  
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => UserData()),
         ChangeNotifierProvider(create: (context) => AuthService()),
       ],
-      child:const MyApp()));
-
-  //runApp(, child: const MyApp()));
+  child:const MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {

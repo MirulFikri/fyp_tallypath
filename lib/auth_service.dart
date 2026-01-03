@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:fyp_tallypath/fcm.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -27,6 +28,8 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    var userId = UserData().id;
+    if(userId!=null) await FcmService.instance.logout(userId);
     _token = null;
     _expiresAt = null;
     await UserData().clear();

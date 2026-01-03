@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 class UserData extends ChangeNotifier {
   // Singleton Instance
@@ -18,6 +19,7 @@ class UserData extends ChangeNotifier {
   String? email;
   String? mobile;
   String? dob;
+  String? fcmToken;
 
   List<dynamic> groupList = [
     {"groupId":"", "name":"", "total":0, "members":[]},
@@ -44,11 +46,6 @@ class UserData extends ChangeNotifier {
     }
   }
 
-  /// The JSON format must be:
-  /// {
-  ///   "token": "...",
-  ///   "user": {...}
-  /// }
   Future<void> fromJson(Map<String, dynamic> json) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -197,5 +194,22 @@ class UserData extends ChangeNotifier {
       print(e);
       return "null";
     }
+  }
+}
+
+class DeviceIdProvider {
+  static const _key = 'device_id';
+
+  static Future<String> getDeviceId() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    var deviceId = prefs.getString(_key);
+
+    if (deviceId == null) {
+      deviceId = const Uuid().v4();
+      await prefs.setString(_key, deviceId);
+    }
+
+    return deviceId;
   }
 }
