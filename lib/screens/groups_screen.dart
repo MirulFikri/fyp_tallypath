@@ -457,10 +457,10 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
             }
           }
       } else {
-        ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("${res.body}")));
+        ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("Network Error")));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("$e")));
+      ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("Network Error")));
     }finally{
       setState(() { _isLoading = false;});
     }
@@ -571,10 +571,12 @@ class _JoinGroupDialogState extends State<JoinGroupDialog> {
             }
           }
       } else {
-        ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("${res.body}")));
+        print("Status Code: Error ${res.statusCode}");
+        ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("Network Error")));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("$e")));
+      print(e);
+      ScaffoldMessenger.of(context,).showSnackBar(SnackBar(content: Text("Network Error")));
     }finally{
       setState(() { _isLoading = false;});
     }

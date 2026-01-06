@@ -185,7 +185,7 @@ class _CreateGoalScreenState extends State<CreateGoalScreen> {
       await Api.createPlan(newGoal);
     }catch(e){
       print(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('Network Error')));
     }
 
     Navigator.pop(context, newGoal);

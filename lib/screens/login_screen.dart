@@ -63,12 +63,12 @@ class _LoginScreenState extends State<LoginScreen> {
             }
         } else {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${res.body}")));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Network Error")));
           }
         }
       } catch (e) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Network Error")));
           }
       } finally {
         setState(() => _isLoading = false);
@@ -137,8 +137,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _identifierController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: const InputDecoration(
+                            //fillColor: Colors.white38,
                             hintText: 'example@example.com / username',
-                            border: InputBorder.none,
+                            border: UnderlineInputBorder( borderRadius: BorderRadius.all(Radius.circular(12)),),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -163,8 +164,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           decoration: InputDecoration(
+                            //fillColor: Colors.white,
                             hintText: '••••••••',
-                            border: InputBorder.none,
+                            border: UnderlineInputBorder( borderRadius: BorderRadius.all(Radius.circular(12)),),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword

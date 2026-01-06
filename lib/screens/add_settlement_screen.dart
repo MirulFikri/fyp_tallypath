@@ -33,7 +33,7 @@ class _AddSettlementDialogState extends State<AddSettlementDialog> {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: widget.isWaive ? Text('Waive', textAlign: TextAlign.center,) : Text('Payment', textAlign: TextAlign.center,),
-      titleTextStyle: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,),
+      titleTextStyle: TextStyle(fontSize: 20,fontWeight: FontWeight.bold, color: Colors.grey[800]),
       content: Form(
         key: formKey,
         child: SingleChildScrollView(
@@ -41,9 +41,11 @@ class _AddSettlementDialogState extends State<AddSettlementDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              widget.isWaive ? SizedBox() : const Text('Payment Option', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              widget.isWaive ? SizedBox() : const SizedBox(height: 8),
-              widget.isWaive ? SizedBox() : TextFormField(
+              widget.isWaive ? SizedBox() :Column(
+                children:[
+              const Text('Payment Method', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              TextFormField(
                 controller: titleController,
                 decoration: InputDecoration(
                   fillColor: Colors.white,
@@ -57,10 +59,12 @@ class _AddSettlementDialogState extends State<AddSettlementDialog> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Payment Option can't be empty";
+                    return "Specify how you paid";
                   }
                   return null;
                 },
+              ),
+                ]
               ),
               SizedBox(height:16),
               Container(

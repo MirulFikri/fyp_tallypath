@@ -153,7 +153,7 @@ class _PersonalSpendingScreenState extends State<PersonalSpendingScreen> {
       });
       _loadNewExpenses();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+      print(e);
     }
   }
 
@@ -489,7 +489,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                 if (mounted) {
                   ScaffoldMessenger.of(
                     context,
-                  ).showSnackBar(SnackBar(content: Text('$e'), backgroundColor: Colors.red));
+                  ).showSnackBar(SnackBar(content: Text('Network Error'), backgroundColor: Colors.red));
                 }
               }
 
@@ -630,7 +630,7 @@ class FloatingMessageInputBar extends StatelessWidget {
                           onSend();
                           controller.clear();
                         } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Network Error')));
                         }
                       },
                       tooltip: 'Send Message',

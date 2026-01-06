@@ -94,7 +94,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                 children: [
                   Text(
                     isWaive ? 'Waive Debt' : 'Pay Someone',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, ),
                   ),
                 ],
               ),
@@ -102,52 +102,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
             ),
           ),
         ),           
-            // Row(
-            //   children: [
-            //     Container(
-            //       padding: const EdgeInsets.all(12),
-            //       decoration: BoxDecoration(
-            //         color: Colors.white,
-            //         borderRadius: BorderRadius.circular(12),
-            //       ),
-            //       child: Icon(Icons.monetization_on, color: isWaive ? Colors.greenAccent : Colors.redAccent, size: 24),
-            //     ),
-            //     const SizedBox(width: 12),
-            //     Expanded(
-            //       child: Column(
-            //         crossAxisAlignment: CrossAxisAlignment.start,
-            //         children: [
-            //           Text(
-            //             isWaive ? 'Amount Lent' : 'Amount Borrowed',
-            //             style: const TextStyle(color: Color.fromARGB(255, 0, 56, 45), fontSize: 12),
-            //           ),
-            //           const SizedBox(height: 4),
-            //           Text(
-            //             Globals.formatCurrency(
-            //               totalBalance/100
-            //             ),
-            //             style: TextStyle(
-            //               color: isWaive ? Colors.green: Colors.red,
-            //               fontSize: 22,
-            //               fontWeight: FontWeight.bold,
-            //             ),
-            //           ),
-            //         ],
-            //       ),
-            //     ),
-            //     VerticalDivider(thickness: 1),
-            //     SizedBox(height: 140,child: SingleChildScrollView(
-            //       child:Column(
-            //         crossAxisAlignment: CrossAxisAlignment.start,
-            //         children:[...cardBuilder(context, isWaive)]
-            //       )
-            //     ))
-            //   ],
-            // ),
-
-
-
-            
+       
           ],
     );
   }
@@ -205,7 +160,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         );
       }
     }
-    return w;
+    return w.isEmpty ? [Container(margin: EdgeInsets.all(8), child:Text("No pending balance", style: TextStyle(color: Colors.grey[600])))]: w;
   }
 
   List<Widget> cardBuilder(BuildContext context, bool isWaive){
@@ -305,7 +260,14 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
     setState(() {
       totalBalance = tb;
     });
-    return w;
+    return w.isEmpty
+        ? [
+          Container(
+            margin: EdgeInsets.all(8),
+            child: Text("No pending balance", style: TextStyle(color: Colors.grey[600])),
+          ),
+        ]
+        : w;
   }
 
   Widget _content(BuildContext context) {
@@ -317,17 +279,16 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Color(0xFF00D4AA).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.payments_sharp, color: Color(0xFF00D4AA), size: 24),
-                ),
+                // Container(
+                //   padding: const EdgeInsets.all(12),
+                //   decoration: BoxDecoration(
+                //     color: Color(0xFF00D4AA).withValues(alpha: 0.2),
+                //     borderRadius: BorderRadius.circular(12),
+                //   ),
+                //   child: Icon(Icons.payments_sharp, color: Color(0xFF00D4AA), size: 24),
+                // ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
+                Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
@@ -347,38 +308,41 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
                       ),
                     ],
                   ),
-                ),
+                
+          Expanded(child: SizedBox()),
+          balancePrev(groupBalance),
+
               ],
             ),
             Divider(thickness: 0.6),
 
-  ShaderMask(
-  shaderCallback: (Rect rect) {
-    return const LinearGradient(
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-      colors: [
-        Colors.transparent,
-        Colors.black,
-        Colors.black,
-        Colors.transparent,
-      ],
-      stops: [0.0, 0.08, 0.92, 1.0],
-    ).createShader(rect);
-  },
-  blendMode: BlendMode.dstIn,
-  child: SizedBox(
-    height: 45,
-    child: ListView.separated(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: groupBalance.length,
-      separatorBuilder: (_, __) => const SizedBox(),
-      itemBuilder: (_, i) { if(groupBalance[i]["debtor"] == you["id"] || groupBalance[i]["creditor"] == you["id"]) {return SizedBox();} else{return balanceCard(groupBalance[i]);}},
+//   ShaderMask(
+//   shaderCallback: (Rect rect) {
+//     return const LinearGradient(
+//       begin: Alignment.centerLeft,
+//       end: Alignment.centerRight,
+//       colors: [
+//         Colors.transparent,
+//         Colors.black,
+//         Colors.black,
+//         Colors.transparent,
+//       ],
+//       stops: [0.0, 0.08, 0.92, 1.0],
+//     ).createShader(rect);
+//   },
+//   blendMode: BlendMode.dstIn,
+//   child: SizedBox(
+//     height: 45,
+//     child: ListView.separated(
+//       scrollDirection: Axis.horizontal,
+//       padding: const EdgeInsets.symmetric(horizontal: 16),
+//       itemCount: groupBalance.length,
+//       separatorBuilder: (_, __) => const SizedBox(),
+//       itemBuilder: (_, i) { if(groupBalance[i]["debtor"] == you["id"] || groupBalance[i]["creditor"] == you["id"]) {return SizedBox();} else{return balanceCard(groupBalance[i]);}},
 
-    ),
-  ),
-),
+//     ),
+//   ),
+// ),
 
             SizedBox(height:7),
             Row(
@@ -427,6 +391,77 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         ),
         //...balanceList(groupBalance)
       ],
+    );
+  }
+
+  Widget balancePrev(List<dynamic> balance) {
+    List<Widget> w = [];
+    var isSettled = true;
+    var d = balance.where((b) => b["debtor"] == UserData().id).length;
+    var c = balance.where((b) => b["creditor"] == UserData().id).length;
+
+    for (var b in balance) {
+      if (b["debtor"] == UserData().id) {
+        isSettled = false;
+        return SafeArea(
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 255, 190, 190),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      "$d Pending Debt",
+                      style: TextStyle(
+                        color: const Color.fromARGB(255, 255, 105, 94),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      } else if (b["creditor"] == UserData().id) {
+        isSettled = false;
+        return SafeArea(
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 216, 255, 196),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      "$c Pending Credit",
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 46, 212, 0),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+      child: Text("Settled", style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600, fontSize: 14)),
     );
   }
 
@@ -559,7 +594,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
       });
       _loadNewExpenses();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+      print(e);
     }
   }
 
@@ -586,7 +621,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
         });
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+      print(e);
     }
   }
 
@@ -658,7 +693,7 @@ class _GroupMainScreenState extends State<GroupMainScreen> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                   decoration: BoxDecoration(
                     color: Color.fromARGB(255, 216, 255, 196),
                     borderRadius: BorderRadius.circular(4),
@@ -799,6 +834,7 @@ class SliderFormField extends FormField<double> {
                return Column(
                  children: [
                    Slider(
+                    padding:EdgeInsets.all(12),
                      min: min,
                      max: max == 0 ? 1 : max,
                      divisions: divisions,
@@ -838,9 +874,12 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
   int amt = 0;
   String? selectedName;
   List<String> names = [];
+  late int unlocked;
+  bool divided = false;
 
   @override
   void initState() {
+    unlocked = widget.members.length + 1;
     amountController.addListener(() {
       final amount = ((amountController.number ?? 0) * 100).toDouble();
       sliderController.value = sliderController.value.clamp(0, amount);
@@ -871,14 +910,16 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
         splitControllers[index].number = amount / 100;
       });
 
-      var w = Column(
+      var w = Container(
+      decoration: BoxDecoration(color: Colors.white, borderRadius:BorderRadius.circular(8), ),
+      padding: EdgeInsets.only(left: 8, right: 8, bottom: 8),
+      margin: EdgeInsets.only(top: 12),
+      child:Column(children:[
+      Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          SizedBox(height: 16),
-          //Divider(thickness: 1,),
           Row(
             children: [
-              Text("${widget.members[index]['nameInGroup']}:"),
               Expanded(
                 child: SliderFormField(
                   max: amt.toDouble(),
@@ -891,6 +932,10 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               ),
             ],
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children:[
+          Text("${widget.members[index]['nameInGroup']}"),
           Focus(
             onFocusChange: (hasFocus) {
               if (!hasFocus) {
@@ -923,9 +968,9 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                 },
               ),
             ),
-          ),
+          ),])
         ],
-      );
+      )]));
       widgets.add(w);
     }
     return widgets;
@@ -990,6 +1035,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                   setState(() {
                     amt = ((amountController.number ?? 0) * 100).toInt();
                   });
+                  divided = false;
                 },
               ),
               SizedBox(height: 16),
@@ -1029,10 +1075,36 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
               SizedBox(height: 16),
               Divider(thickness: 1),
               const SizedBox(height: 8),
-              const Text('Cost Split', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children:[
+                  const Text('Cost Split', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  Expanded(child:SizedBox()),
+                  InkWell(child:Icon(Icons.align_horizontal_right_rounded, color: Colors.grey[500]), onTap:(){
+                      if(divided) return;
+                      final amount = ((amt ?? 0)).toDouble();
+                      setState(() {
+                        splitController.number = amount / unlocked;
+                        sliderController.value = amount / unlocked;
+                      });
+                    for (int i = 0; i < splitControllers.length; i++) {
+                      setState((){
+                        splitControllers[i].number = amount/unlocked;
+                        sliderControllers[i].value = amount/unlocked;
+                      });
+                    }
+                    divided = true;
+                  }),
+
+              ]),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(color: Colors.white, borderRadius:BorderRadius.circular(8), ),
+                padding: EdgeInsets.only(left: 8, right: 8, bottom: 8),
+                margin: EdgeInsets.only(top: 12),
+                child:Column(children:[
               Row(
                 children: [
-                  Text("You:"),
                   Expanded(
                     child: SliderFormField(
                       max: amt.toDouble(),
@@ -1046,8 +1118,10 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                 ],
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Flexible(child:Text("You",),),
+                  Expanded(child:SizedBox()),
                   Focus(
                     onFocusChange: (hasFocus) {
                       if (!hasFocus) {
@@ -1085,6 +1159,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                     ),
                   ),
                 ],
+              ),])
               ),
               Column(children: _buildExpenseSplit()),
               const SizedBox(height: 8),
@@ -1147,6 +1222,7 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                 if (amts[i + 1] == 0) continue;
                 splits.add({"userId": widget.members[i]["userId"], "share": amts[i + 1]});
               }
+
               final String body = jsonEncode({
                 "groupId": UserData().groupList[widget.groupIndex]["groupId"],
                 "title": titleController.text.trim(),
@@ -1155,17 +1231,26 @@ class _AddExpenseDialogState extends State<AddExpenseDialog> {
                 "splits": splits,
               });
 
-              try {
-                await Api.createExpense(body, UserData().groupList[widget.groupIndex]["groupId"]);
-              } catch (e) {
+              var sum = 0;
+              for (var i = 0; i < widget.members.length + 1; i++) { sum = (sum + amts[i]).toInt();}
+              if((sum-amt).abs() < 10){
+                try {
+                  await Api.createExpense(body, UserData().groupList[widget.groupIndex]["groupId"]);
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Network Error'), backgroundColor: Colors.red));
+                  }
+                }
+              Navigator.pop(context);
+              }else{
                 if (mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('$e'), backgroundColor: Colors.red));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Costs must add up to total'), backgroundColor: Colors.red),
+                  );
                 }
               }
-
-              Navigator.pop(context);
             } else {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(

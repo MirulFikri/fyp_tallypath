@@ -61,10 +61,13 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Tally marks icon
-            CustomPaint(size: const Size(120, 120), painter: TallyMarksPainter()),
+            Image.asset(  'assets/images/tallypathwhite.png',
+              width: 200,
+              height: 200,
+              fit: BoxFit.cover),
             const SizedBox(height: 24),
             const Text(
-              'TallyPath',
+              'Tallypath',
               style: TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.bold, letterSpacing: 1.2),
             ),
           ],

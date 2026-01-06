@@ -17,13 +17,13 @@ class WelcomeScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Tally marks icon
-                CustomPaint(
-                  size: const Size(120, 120),
-                  painter: TallyMarksPainter(),
-                ),
+                Image.asset(  'assets/images/tallypathgreen.png',
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.cover),
                 const SizedBox(height: 24),
                 const Text(
-                  'TallyPath',
+                  'Tallypath',
                   style: TextStyle(
                     color: Color(0xFF00D4AA),
                     fontSize: 42,
@@ -77,11 +77,54 @@ class WelcomeScreen extends StatelessWidget {
                 // Forgot Password
                 TextButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Password reset link will be sent to your email'),
+                    showDialog(context: context, builder: (_) => Dialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        width: 400,
+                        child: Form(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Title
+                              const Text("Reset Password", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+
+                              const SizedBox(height: 16),
+
+                              // Invite Code
+                              TextFormField(
+                                decoration: InputDecoration(labelText: "Email or Username", border: OutlineInputBorder()),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'invalid code';
+                                  }
+                                  return null;
+                                },
+                              ),
+
+                              const SizedBox(height: 12),
+
+                              // Buttons
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Password reset link will be sent to your email')),
+                                      );
+                                    },
+                                    child: const Text('Join'),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    );
+                    ));
                   },
                   child: const Text(
                     'Forgot Password?',

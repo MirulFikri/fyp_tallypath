@@ -61,7 +61,7 @@ void initState(){
         jsonEncode({"inviteLink": inviteLink, "inviteCode": inviteCode, "expiryDate": expiryDate}),
       );
     }catch(e){
-      rethrow;
+      debugPrint(e.toString());
     }
   }
   @override

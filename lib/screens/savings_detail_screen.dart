@@ -32,7 +32,7 @@ class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
       });
     } catch (e) {
       print(e);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Network Error")));
     }
   }
 

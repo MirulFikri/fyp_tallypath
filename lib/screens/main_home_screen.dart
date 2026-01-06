@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fyp_tallypath/api.dart';
 import 'package:fyp_tallypath/globals.dart';
+import 'package:fyp_tallypath/screens/group_info_screen.dart';
 import 'package:fyp_tallypath/screens/notification_screen.dart';
+import 'package:fyp_tallypath/screens/payment_info_screen.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -131,7 +133,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                         InkWell(
                           child:Icon(Icons.payment,color: Colors.grey[700]),
                           onTap:(){
-                            print("TEST");
+                            Navigator.push(context, MaterialPageRoute(builder:(context) => PaymentInfoScreen()));
                           }
                         )
                       ],

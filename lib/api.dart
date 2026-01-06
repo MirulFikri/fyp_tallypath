@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:fyp_tallypath/globals.dart';
 import 'package:fyp_tallypath/user_data.dart';
 import 'package:fyp_tallypath/auth_service.dart';
@@ -281,7 +282,7 @@ class Api{
     }
   }
 
-    static Future<dynamic> deactivateDeviceFcm({required String token, required String deviceId}) async {
+  static Future<dynamic> deactivateDeviceFcm({required String token, required String deviceId}) async {
     final url = Uri.parse("${Globals.baseUrl}/api/user-devices/deactivate");
     final body = """
       {
@@ -307,5 +308,25 @@ class Api{
       rethrow;
     }
   }
+  static Future<Map<String, dynamic>> uploadImage(File image, String publicId) async {
+    final request = http.MultipartRequest('POST', Uri.parse('https://api.cloudinary.com/v1_1/dq6gjb9nz/image/upload'));
+    request.fields['upload_preset'] = 'paymentoptionimages';
+    request.fields['public_id'] = publicId;
 
+    request.files.add(await http.MultipartFile.fromPath('file', image.path));
+
+    final response = await request.send();
+
+    if (response.statusCode != 200) {
+      throw Exception('Upload failed');
+    }
+
+    final body = await response.stream.bytesToString();
+    final json = jsonDecode(body);
+
+    final imageUrl = json['secure_url'];
+
+    // Save imageUrl in DB or state
+    return {"imageUrl": imageUrl, "publicId": publicId};
+  }
 }

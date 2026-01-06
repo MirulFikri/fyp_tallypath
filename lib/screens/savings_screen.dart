@@ -27,7 +27,7 @@ class _SavingsScreenState extends State<SavingsScreen> with RouteAware{
         allGoals = [...goals];
       });
     }catch(e){
-      if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
+      if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Network Error")));
     }
   }
 

@@ -72,12 +72,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
       } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("${res.body}")));
+        ).showSnackBar(SnackBar(content: Text("Network Error")));
       }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("$e")));
+      ).showSnackBar(SnackBar(content: Text("Network Error")));
     }
   }
 
@@ -111,12 +111,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("${res.body}")));
+        ).showSnackBar(SnackBar(content: Text("Network Error")));
       }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("$e")));
+      ).showSnackBar(SnackBar(content: Text("Network Error")));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -190,7 +190,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 child: TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
-                    hintText: 'Your full name',
+                    hintText: 'Your name',
                     border: InputBorder.none,
                   ),
                   validator: (value) {
@@ -235,35 +235,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
               const SizedBox(height: 20),
               
-              // Mobile Number Field
-              const Text(
-                'Mobile Number (Optional)',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD4F4ED),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextFormField(
-                  controller: _mobileController,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    hintText: '+60 12-345 6789',
-                    border: InputBorder.none,
-                  ),
-                  validator: (value) {
-                    return null;
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
+              // // Mobile Number Field
+              // const Text(
+              //   'Mobile Number (Optional)',
+              //   style: TextStyle(
+              //     fontSize: 14,
+              //     color: Colors.black87,
+              //     fontWeight: FontWeight.w500,
+              //   ),
+              // ),
+              // const SizedBox(height: 8),
+              // Container(
+              //   decoration: BoxDecoration(
+              //     color: const Color(0xFFD4F4ED),
+              //     borderRadius: BorderRadius.circular(12),
+              //   ),
+              //   padding: const EdgeInsets.symmetric(horizontal: 16),
+              //   child: TextFormField(
+              //     controller: _mobileController,
+              //     keyboardType: TextInputType.phone,
+              //     decoration: const InputDecoration(
+              //       hintText: '+60 12-345 6789',
+              //       border: InputBorder.none,
+              //     ),
+              //     validator: (value) {
+              //       return null;
+              //     },
+              //   ),
+              // ),
+              // const SizedBox(height: 20),
               
               // Email Field
               const Text(
@@ -301,36 +301,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
               const SizedBox(height: 20),
               
-              // Date of Birth Field
-              const Text(
-                'Date Of Birth (Optional)',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD4F4ED),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextFormField(
-                  controller: _dobController,
-                  readOnly: true,
-                  onTap: () => _selectDate(context),
-                  decoration: const InputDecoration(
-                    hintText: 'DD/MM/YYYY',
-                    border: InputBorder.none,
-                    suffixIcon: Icon(Icons.calendar_today_outlined),
-                  ),
-                  validator: (value) {
-                    return null;
-                  },
-                ),
-              ),
+              // // Date of Birth Field
+              // const Text(
+              //   'Date Of Birth (Optional)',
+              //   style: TextStyle(
+              //     fontSize: 14,
+              //     color: Colors.black87,
+              //     fontWeight: FontWeight.w500,
+              //   ),
+              // ),
+              // const SizedBox(height: 8),
+              // Container(
+              //   decoration: BoxDecoration(
+              //     color: const Color(0xFFD4F4ED),
+              //     borderRadius: BorderRadius.circular(12),
+              //   ),
+              //   padding: const EdgeInsets.symmetric(horizontal: 16),
+              //   child: TextFormField(
+              //     controller: _dobController,
+              //     readOnly: true,
+              //     onTap: () => _selectDate(context),
+              //     decoration: const InputDecoration(
+              //       hintText: 'DD/MM/YYYY',
+              //       border: InputBorder.none,
+              //       suffixIcon: Icon(Icons.calendar_today_outlined),
+              //     ),
+              //     validator: (value) {
+              //       return null;
+              //     },
+              //   ),
+              // ),
               const SizedBox(height: 20),
               
               // Password Field
@@ -375,6 +375,45 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     }
                     if (value.length < 6) {
                       return 'Password must be at least 6 characters';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Password Field
+              const Text(
+                'Re-type Password',
+                style: TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(color: const Color(0xFFD4F4ED), borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextFormField(
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    hintText: '••••••••',
+                    border: InputBorder.none,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please re-type your password';
+                    }
+                    if (value != _passwordController.text) {
+                      return 'Password do not match';
                     }
                     return null;
                   },

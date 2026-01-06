@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Delete Your Data - TallyPath</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      text-align: center;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #2ae6a1;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #6fe3b9;
+    }
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="color: #2ae6a1;">Tallypath</h1>
+  <p>Enter your email or username to permanently delete all your data.</p>
+  <p style="color: #e62a2a;">WARNING: This operation is irreversible.</p>
+  <input type="text" id="identifier" placeholder="Email or Username">
+  <button onclick="deleteData()">Delete My Data</button>
+  <div id="message"></div>
+
+  <script>
+    async function deleteData() {
+      const identifier = document.getElementById('identifier').value.trim();
+      const messageDiv = document.getElementById('message');
+
+      if (!identifier) {
+        messageDiv.textContent = "Please enter your email or username.";
+        messageDiv.style.color = "red";
+        return;
+      }
+
+      try {
+        const response = await fetch('https://tallypath.my/api/users/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ identifier })
+        });
+
+        if (response.ok) {
+          messageDiv.textContent = "Your data has been deleted successfully.";
+          messageDiv.style.color = "green";
+        } else {
+          const errorData = await response.json();
+          messageDiv.textContent = "Error: " + (errorData.message || response.statusText);
+          messageDiv.style.color = "red";
+        }
+      } catch (err) {
+        messageDiv.textContent = "Network error: " + err.message;
+        messageDiv.style.color = "red";
+      }
+    }
+  </script>
+</body>
+</html>
